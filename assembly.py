@@ -1,12 +1,17 @@
 import FreeCAD as App
 import Part
 import os
+import sys
 
-from part_spool import build_right_spool, build_left_spool
-from part_handle import build_handle
-from part_frame import build_right_frame, build_left_frame
-from part_crossbars import build_crossbars
-from part_caps import build_caps
+# Ensure the local directory is in the python path to import the split modules
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+from part_01_spool_right import build_right_spool
+from part_01_spool_left import build_left_spool
+from part_02_handle import build_handle
+from part_03_frame import build_right_frame, build_left_frame
+from part_04_crossbars import build_crossbars
+from part_05_caps import build_caps
 
 def generate_assembly():
     doc = App.newDocument("ReelAssembly")

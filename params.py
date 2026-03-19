@@ -1,6 +1,9 @@
 # params.py
+
+# This ratio ensures the largest dimension (Y-axis currently 300) 
+# maps precisely to a 250mm bounding box when user_scale = 1.0.
 user_scale = 1.0
-scale = user_scale * 0.95
+scale = user_scale * (250.0 / 300.0)
 clearance = 0.5 * scale
 
 # Core Spool

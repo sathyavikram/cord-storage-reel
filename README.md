@@ -46,11 +46,15 @@ Want to print a smaller reel for Paracord? Or a massive one for hoses?
 2. Change the `user_scale` variable (Default is `1.0`).
 
 Estimated Capacities for 9mm diameter cord (14/3 gauge) at ~70% packing efficiency:
-* `user_scale = 0.50` (Max Frame Width 125mm): **~18 feet** 
-* `user_scale = 0.75` (Max Frame Width 187mm): **~60 feet**
-* `user_scale = 1.00` (Max Frame Width 250mm): **~142 feet**
-* `user_scale = 1.25` (Max Frame Width 312mm): **~277 feet**
-* `user_scale = 1.50` (Max Frame Width 375mm): **~478 feet**
+
+| `user_scale` | Minimum Build Plate Required | Estimated Cord Capacity |
+|------------|----------------------------|-------------------------|
+| 0.50       | 125mm x 125mm x 125mm        | **~18 feet**            |
+| 0.75       | 187mm x 187mm x 187mm        | **~60 feet**            |
+| **1.00**   | **250mm x 250mm x 250mm**    | **~142 feet**           |
+| 1.25       | 315mm x 315mm x 315mm        | **~277 feet**           |
+| 1.50       | 375mm x 375mm x 375mm        | **~478 feet**           |
+| 2.00       | 500mm x 500mm x 500mm        | **~1,134 feet**         |
 
 *(By default, the mathematical constraints guarantee the largest dimension of the entire stand won't exceed `250mm` when scale is `1.0`)*
 

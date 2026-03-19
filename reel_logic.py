@@ -5,147 +5,186 @@ import os
 
 doc = App.newDocument()
 
-# Design Parameters for Heavy Duty Extension Cord
-# By default, user_scale = 1.0 is engineered to precisely fit a massive 350x350x350mm build envelope.
-# This yields a total maximum storage capacity of approx ~150 FT of thick 14/3 Gauge Extension Cord!
-# For a 300x300x300mm plate (e.g. Prusa XL), change this to 0.85
-# For a 256x256x256mm plate (e.g. Bambu Lab), change this to 0.73
-# For a 180x180x180mm plate (e.g. Prusa Mini), change this to 0.50
-user_scale = 0.5
-
-# Internal math adapter: To make user_scale = 1.0 hit exactly ~345mm wide/tall bounds.
+# --- Responsive Sizing Geometry ---
+user_scale = 1.0
 scale = user_scale * 0.95
+clearance = 0.5 * scale  # crucial 0.5mm mechanical gap for print-in-place and snap-fitting!
 
-flange_radius = 120 * scale         # scaled diameter to hold cord
-flange_thickness = 15 * scale       # Solid thickness
-axle_radius = 30 * scale            # scaled axle radius
-axle_length = 200 * scale           # Maximized length fitting inside footprint
-handle_length = 100 * scale
-handle_arm_thickness = 10 * scale
-handle_grip_radius = 12 * scale
-handle_grip_length = 80 * scale
+# Core Spool Dimensions
+flange_radius = 120 * scale
+flange_thickness = 15 * scale
+axle_radius = 30 * scale
+axle_length = 160 * scale # Clean width specifically for winding cord
+half_axle = axle_length / 2.0
 
-pin_radius = 15 * scale             # pins holding the reel structure
-hub_hole_radius = 20 * scale        # radial gap between the axle pin and the ring
-hub_radius = 50 * scale             # stand connecting rings matching the axle
-hub_thickness = 26 * scale          # thicker than the stand diameter
+pin_radius = 15 * scale
+pin_length = 40 * scale   
 
-# Total longitudinal gap between reel and stand
-z_gap = 5 * scale 
+# Fully redesigned Semi-Rectangular Flat-Pack Stand parameters
+frame_width = 32 * scale     # Extra thick strut width for the stand
+hub_thickness = 32 * scale   # Strut thickness perfectly matching width to form massive solid rectangular blocks
+hub_radius = 50 * scale      # Expanding stand ring hub perfectly around axle
+hub_hole_radius = pin_radius + 1.0 * scale # Spin gap
 
-# --- Reel Body ---
-# Flange 1 (Left)
-f1 = Part.makeCylinder(flange_radius, flange_thickness, App.Vector(0,0,0))
-# Flange 2 (Right)
-f2 = Part.makeCylinder(flange_radius, flange_thickness, App.Vector(0, 0, axle_length - flange_thickness))
+crossbar_radius = 12 * scale # Thicker solid circular crossbars to span between A-Frames
+z_gap = 5 * scale            # Frictionless airgap between reel wheel and frame
 
-flanges_with_holes = f1.fuse(f2)
+# --- 1. Right Spool Half ---
+r_flange = Part.makeCylinder(flange_radius, flange_thickness, App.Vector(0,0, half_axle))
+r_axle = Part.makeCylinder(axle_radius, half_axle, App.Vector(0,0,0))
+
+# Inner interlocking Peg
+peg_radius = axle_radius - (10 * scale)
+r_axle_peg = Part.makeCylinder(peg_radius, 25*scale, App.Vector(0,0,-25*scale))
+
+# Outer Pin
+r_pin = Part.makeCylinder(pin_radius, pin_length, App.Vector(0,0, half_axle + flange_thickness))
+
+# Lighten Flange with material cutouts
 hole_radius = 30 * scale
 hole_dist = 70 * scale
 for i in range(6):
     angle = math.radians(i * 60)
     hx = hole_dist * math.cos(angle)
     hy = hole_dist * math.sin(angle)
-    cutter = Part.makeCylinder(hole_radius, axle_length + 20*scale, App.Vector(hx, hy, -10*scale))
-    flanges_with_holes = flanges_with_holes.cut(cutter)
+    cutter = Part.makeCylinder(hole_radius, flange_thickness + 10, App.Vector(hx, hy, half_axle - 5))
+    r_flange = r_flange.cut(cutter)
 
-axle = Part.makeCylinder(axle_radius, axle_length)
+# Socket perfectly sized for modular Handle to snap into right flange
+handle_peg_radius = 8 * scale
+handle_hole = Part.makeCylinder(handle_peg_radius + clearance, flange_thickness + 10, App.Vector(hole_dist, 0, half_axle - 5))
+r_flange = r_flange.cut(handle_hole)
 
-# Left Pin & Cap
-pin_left_ext = z_gap + hub_thickness + (5*scale)
-left_pin = Part.makeCylinder(pin_radius, pin_left_ext, App.Vector(0,0,-pin_left_ext))
-left_cap = Part.makeCylinder(25*scale, 5*scale, App.Vector(0,0,-(pin_left_ext + 5*scale)))
+right_spool = r_flange.fuse(r_axle).fuse(r_axle_peg).fuse(r_pin)
+right_spool = right_spool.removeSplitter()
 
-# Right Pin & Handle Base
-right_pin_ext = z_gap + hub_thickness + (5*scale)
-right_pin = Part.makeCylinder(pin_radius, right_pin_ext, App.Vector(0, 0, axle_length))
 
-# Handle Arm sits exactly at Z = axle_length + right_pin_ext
-handle_z = axle_length + right_pin_ext 
-arm_box = Part.makeBox(handle_length, 24*scale, handle_arm_thickness, App.Vector(0, -12*scale, handle_z))
-arm_base = Part.makeCylinder(16*scale, handle_arm_thickness, App.Vector(0, 0, handle_z))
-arm_end = Part.makeCylinder(16*scale, handle_arm_thickness, App.Vector(handle_length, 0, handle_z))
-arm = arm_box.fuse(arm_base).fuse(arm_end)
+# --- 2. Left Spool Half ---
+l_flange = Part.makeCylinder(flange_radius, flange_thickness, App.Vector(0,0, -half_axle - flange_thickness))
+l_axle = Part.makeCylinder(axle_radius, half_axle, App.Vector(0,0,-half_axle))
 
-# Handle Grip extending from front arm towards viewer
-grip = Part.makeCylinder(handle_grip_radius, handle_grip_length, App.Vector(handle_length, 0, handle_z + handle_arm_thickness))
+# Inner interlocking Hole with clearance so it slides onto Right half effortlessly
+l_axle_hole = Part.makeCylinder(peg_radius + clearance, 30*scale, App.Vector(0,0,-28*scale)) 
+l_pin = Part.makeCylinder(pin_radius, pin_length, App.Vector(0,0, -half_axle - flange_thickness - pin_length))
 
-# Combine reel parts
-reel = flanges_with_holes.fuse(axle).fuse(left_pin).fuse(left_cap).fuse(right_pin).fuse(arm).fuse(grip)
-reel = reel.removeSplitter()
+for i in range(6):
+    angle = math.radians(i * 60)
+    hx = hole_dist * math.cos(angle)
+    hy = hole_dist * math.sin(angle)
+    cutter = Part.makeCylinder(hole_radius, flange_thickness + 10, App.Vector(hx, hy, -half_axle - flange_thickness - 5))
+    l_flange = l_flange.cut(cutter)
+    
+left_spool = l_flange.fuse(l_axle).fuse(l_pin).cut(l_axle_hole)
+left_spool = left_spool.removeSplitter()
 
-# --- Stand ---
-z_left = -18 * scale   # Center of left hub
-z_right = axle_length + (18 * scale)  # Center of right hub dynamically spaced
+
+# --- 3. Modular Handle ---
+# An ergonomic handle that locks straight into the slot on the right flange.
+# Made slightly thicker and positioned externally
+# Starts directly off the external side of right flange:
+h_z = half_axle + flange_thickness 
+h_peg = Part.makeCylinder(handle_peg_radius, flange_thickness, App.Vector(hole_dist, 0, h_z - flange_thickness))
+h_shield = Part.makeCylinder(22*scale, 8*scale, App.Vector(hole_dist, 0, h_z)) 
+h_grip = Part.makeCylinder(14*scale, 65*scale, App.Vector(hole_dist, 0, h_z + 8*scale))
+handle = h_peg.fuse(h_shield).fuse(h_grip).removeSplitter()
+
+
+# --- 4 & 5. Left & Right Semi-Rectangular Stand A-Frames ---
+# Instead of skinny round pipes, this uses flat box framing with massive bed adhesion.
+z_R = half_axle + flange_thickness + z_gap + hub_thickness/2
+z_L = -half_axle - flange_thickness - z_gap - hub_thickness/2
 
 y_floor = -140 * scale
-x_spread = 90 * scale
-y_handle = 150 * scale
-pipe_radius = 8 * scale
+x_spread = 95 * scale
+y_top = 160 * scale
 
-def make_pipe(p1, p2, r):
-    direction = p2 - p1
-    return Part.makeCylinder(r, direction.Length, p1, direction)
+# 3D Positioning layout maps exactly to the YX Plane translated to proper Z-Axes.
+def build_frame(z_plane):
+    P_hub = App.Vector(0, 0, z_plane)
+    P_f = App.Vector(x_spread, y_floor, z_plane)
+    P_b = App.Vector(-x_spread, y_floor, z_plane)
+    P_t = App.Vector(0, y_top, z_plane)
 
-p_hub_L = App.Vector(0, 0, z_left)
-p_fl_L = App.Vector(x_spread, y_floor, z_left)
-p_bl_L = App.Vector(-x_spread, y_floor, z_left)
+    # Function generating flat horizontal rectangles spanning between any 2 structural points flawlessly
+    def make_strut(p1, p2):
+        v = p2 - p1
+        L = v.Length
+        box = Part.makeBox(L, frame_width, hub_thickness, App.Vector(0, -frame_width/2, -hub_thickness/2))
+        c1 = Part.makeCylinder(frame_width/2, hub_thickness, App.Vector(0,0,-hub_thickness/2))
+        c2 = Part.makeCylinder(frame_width/2, hub_thickness, App.Vector(L,0,-hub_thickness/2))
+        strut = box.fuse(c1).fuse(c2)
+        angle = math.degrees(math.atan2(v.y, v.x))
+        strut.Placement = App.Placement(p1, App.Rotation(App.Vector(0,0,1), angle))
+        return strut
 
-p_hub_R = App.Vector(0, 0, z_right)
-p_fr_R = App.Vector(x_spread, y_floor, z_right)
-p_br_R = App.Vector(-x_spread, y_floor, z_right)
+    # Base shape fuses struts with the massive integrated ring
+    s1 = make_strut(P_hub, P_f)
+    s2 = make_strut(P_hub, P_b)
+    s3 = make_strut(P_f, P_b)   # Base support on ground
+    s4 = make_strut(P_hub, P_t) # Upright Handle extension
+    ring = Part.makeCylinder(hub_radius, hub_thickness, P_hub - App.Vector(0,0,hub_thickness/2))
+    frame = s1.fuse(s2).fuse(s3).fuse(s4).fuse(ring)
+    
+    # Machine the frictionless bearing hole so it rolls perfectly
+    hole = Part.makeCylinder(hub_hole_radius, hub_thickness + 10, P_hub - App.Vector(0,0,hub_thickness/2 + 5))
+    
+    # Mill out exact structural connection sockets for crossbars allowing snap-fit assembly
+    sock1 = Part.makeCylinder(crossbar_radius + clearance, hub_thickness + 10, P_f - App.Vector(0,0,hub_thickness/2 + 5))
+    sock2 = Part.makeCylinder(crossbar_radius + clearance, hub_thickness + 10, P_b - App.Vector(0,0,hub_thickness/2 + 5))
+    sock3 = Part.makeCylinder(crossbar_radius + clearance, hub_thickness + 10, P_t - App.Vector(0,0,hub_thickness/2 + 5))
+    
+    return frame.cut(hole).cut(sock1).cut(sock2).cut(sock3).removeSplitter()
 
-p_top_L = App.Vector(0, y_handle, z_left)
-p_top_R = App.Vector(0, y_handle, z_right)
+right_frame = build_frame(z_R)
+left_frame = build_frame(z_L)
 
-pipes = [
-    make_pipe(p_hub_L, p_fl_L, pipe_radius),
-    make_pipe(p_hub_L, p_bl_L, pipe_radius),
-    make_pipe(p_hub_R, p_fr_R, pipe_radius),
-    make_pipe(p_hub_R, p_br_R, pipe_radius),
-    make_pipe(p_fl_L, p_fr_R, pipe_radius),
-    make_pipe(p_bl_L, p_br_R, pipe_radius),
-    make_pipe(p_hub_L, p_top_L, pipe_radius),
-    make_pipe(p_hub_R, p_top_R, pipe_radius),
-    make_pipe(p_top_L, p_top_R, pipe_radius)
-]
 
-# Add spheres at the pipe intersections to create perfectly smooth rounded corners (fillets)
-joint_points = [p_hub_L, p_fl_L, p_bl_L, p_hub_R, p_fr_R, p_br_R, p_top_L, p_top_R]
-joints = [Part.makeSphere(pipe_radius, pt) for pt in joint_points]
+# --- 6, 7, 8. Tie-Rod Crossbars ---
+# Designed exactly identical lengths to safely span left to right side
+bar_len = (z_R + hub_thickness/2) - (z_L - hub_thickness/2)
+z_origin = z_L - hub_thickness/2
 
-stand = pipes[0]
-for p in pipes[1:]:
-    stand = stand.fuse(p)
-for j in joints:
-    stand = stand.fuse(j)
+bar1 = Part.makeCylinder(crossbar_radius, bar_len, App.Vector(x_spread, y_floor, z_origin))
+bar2 = Part.makeCylinder(crossbar_radius, bar_len, App.Vector(-x_spread, y_floor, z_origin))
+bar3 = Part.makeCylinder(crossbar_radius, bar_len, App.Vector(0, y_top, z_origin))
 
-# Stand Hubs mapping exact spacing
-hub_L = Part.makeCylinder(hub_radius, hub_thickness, App.Vector(0, 0, -(z_gap + hub_thickness)))
-hub_R = Part.makeCylinder(hub_radius, hub_thickness, App.Vector(0, 0, axle_length + z_gap))
 
-# Fuse the solid rings to the stand FIRST so the pipes blend into the rings
-stand = stand.fuse(hub_L).fuse(hub_R)
+# --- 9 & 10. End Caps ---
+# External locks that friction-fit or glue over the extreme ends to secure stand
+cap_thickness = 10 * scale
+cap_rad = pin_radius + 12 * scale
 
-# NOW cut the holes completely out of the resulting stand.
-hub_L_hole = Part.makeCylinder(hub_hole_radius, hub_thickness + 20*scale, App.Vector(0, 0, -(z_gap + hub_thickness + 10*scale)))
-hub_R_hole = Part.makeCylinder(hub_hole_radius, hub_thickness + 20*scale, App.Vector(0, 0, axle_length))
+cap_R = Part.makeCylinder(cap_rad, cap_thickness, App.Vector(0,0, half_axle + flange_thickness + pin_length - cap_thickness))
+c_R_sock = Part.makeCylinder(pin_radius + clearance, cap_thickness - 3*scale, App.Vector(0,0, half_axle + flange_thickness + pin_length - cap_thickness))
+cap_R = cap_R.cut(c_R_sock)
 
-stand = stand.cut(hub_L_hole).cut(hub_R_hole)
-stand = stand.removeSplitter()
+cap_L = Part.makeCylinder(cap_rad, cap_thickness, App.Vector(0,0, -half_axle - flange_thickness - pin_length))
+c_L_sock = Part.makeCylinder(pin_radius + clearance, cap_thickness - 3*scale, App.Vector(0,0, -half_axle - flange_thickness - pin_length + 3*scale))
+cap_L = cap_L.cut(c_L_sock)
 
-# Final assembly creation logic generating individual and compound solids internally
-final_shape = Part.makeCompound([reel, stand])
 
-obj = doc.addObject("Part::Feature", "Reel_with_Handle")
-obj.Shape = final_shape
+# Assemble logic for hierarchy
+assembly = Part.makeCompound([right_spool, left_spool, handle, right_frame, left_frame, bar1, bar2, bar3, cap_R, cap_L])
 
+# File Export handling (Individual STLs completely flat-pack ready)
 export_dir = "/Users/intelligentmachine/Documents/workspace/3d-models/cord-storage-reel-v3/exports"
 if not os.path.exists(export_dir):
     os.makedirs(export_dir)
 
-final_shape.exportStep(os.path.join(export_dir, "flange-axle-handle.step"))
-final_shape.exportStl(os.path.join(export_dir, "flange-axle-handle.stl"))
+right_spool.exportStl(os.path.join(export_dir, "01_Right_Spool_Half.stl"))
+left_spool.exportStl(os.path.join(export_dir, "02_Left_Spool_Half.stl"))
+left_frame.exportStl(os.path.join(export_dir, "03_Left_Stand_Frame.stl"))
+right_frame.exportStl(os.path.join(export_dir, "04_Right_Stand_Frame.stl"))
+handle.exportStl(os.path.join(export_dir, "05_Handle.stl"))
+bar1.exportStl(os.path.join(export_dir, "06_Crossbar_Front.stl"))
+bar2.exportStl(os.path.join(export_dir, "07_Crossbar_Back.stl"))
+bar3.exportStl(os.path.join(export_dir, "08_Crossbar_TopHandle.stl"))
+cap_R.exportStl(os.path.join(export_dir, "09_Locking_Cap_R.stl"))
+cap_L.exportStl(os.path.join(export_dir, "10_Locking_Cap_L.stl"))
 
-Part.show(final_shape)
+# Full Step Export
+assembly.exportStep(os.path.join(export_dir, "00_Full_Assembly_Preview.step"))
+
+print(f"\nSUCCESS! Overhauled geometry to modern semi-rectangular flat-pack.")
+print(f"Generated 10 individual tool-ready STL files saved in '{export_dir}'")
 

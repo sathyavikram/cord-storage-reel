@@ -28,9 +28,8 @@ if __name__ == '__main__':
     import Part
     import os
 
-    doc = App.ActiveDocument
-    if not doc:
-        doc = App.newDocument('ExportDoc')
+    doc_name = "Doc_" + os.path.basename(__file__).replace(".py", "")
+    doc = App.newDocument(doc_name)
 
     export_dir = os.path.join(_script_dir, 'exports')
     os.makedirs(export_dir, exist_ok=True)

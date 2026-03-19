@@ -24,9 +24,6 @@ def build_right_spool():
         cutter = Part.makeCylinder(hole_radius, flange_thickness + 10, App.Vector(hx, hy, half_axle - 5))
         r_flange = r_flange.cut(cutter)
 
-    handle_hole = Part.makeCylinder(handle_peg_radius + clearance, flange_thickness + 10, App.Vector(hole_dist, 0, half_axle - 5))
-    r_flange = r_flange.cut(handle_hole)
-
     right_spool = r_flange.fuse(r_axle).fuse(r_axle_peg).fuse(r_pin)
     return right_spool.removeSplitter()
 

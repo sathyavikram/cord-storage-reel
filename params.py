@@ -14,13 +14,13 @@ axle_length = 160 * scale
 half_axle = axle_length / 2.0
 
 pin_radius = 15 * scale
-pin_length = 40 * scale   
+pin_length = 60 * scale   
 
 # Stand parameters
 frame_width = 32 * scale     
 hub_thickness = 32 * scale   
 hub_radius = 50 * scale      
-hub_hole_radius = pin_radius + 1.0 * scale 
+hub_hole_radius = pin_radius + 2.0 * scale 
 
 crossbar_radius = 12 * scale 
 z_gap = 5 * scale            

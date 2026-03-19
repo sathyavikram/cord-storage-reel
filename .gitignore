@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.env
+env/
+venv/
+.venv/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+
+# VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# FreeCAD Temp/Backup files
+*.FCBak
+*.FCstd1
+*.FCstd2
+*.FCstd3
+*.FCMacro
+*.swp
+
+# Note: 3D model export files (*.step, *.stl, *.3mf) are intentionally NOT ignored
+# so they can be pushed to the repository.

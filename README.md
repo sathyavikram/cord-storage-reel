@@ -64,3 +64,6 @@ Estimated Capacities at ~70% packing efficiency:
 3. Slide the assembled Spool axle into the main hub bearings of the Stand Frame.
 4. Press the **Handle** into the offset hole on the Right Spool flange.
 5. Snap/glue the **Locking Caps** onto the ends of the axles protruding through the outside of the Stand Frame to lock the spool in place so it rotates freely without sliding out.
+
+
+Run each part using mcp tools and visual validate in different angles each part and once you finish each part validation, validate final assembly using mcp tool

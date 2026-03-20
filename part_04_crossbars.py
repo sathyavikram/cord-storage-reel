@@ -2,11 +2,13 @@ import sys, os
 try:
     _script_dir = os.path.dirname(os.path.abspath(__file__))
 except NameError:
-    _script_dir = "/Users/intelligentmachine/Documents/workspace/3d-models/cord-storage-reel-v3"
+    _script_dir = os.getcwd()
 if _script_dir not in sys.path:
     sys.path.insert(0, _script_dir)
 import FreeCAD as App
 import Part
+import sys
+if "params" in sys.modules: del sys.modules["params"]
 from params import *
 
 def build_crossbars():
@@ -27,7 +29,7 @@ if __name__ == '__main__':
     doc_name = "Doc_" + os.path.basename(__file__).replace(".py", "")
     doc = App.newDocument(doc_name)
 
-    export_dir = os.path.join(_script_dir, 'exports')
+    export_dir = EXPORT_DIR
     os.makedirs(export_dir, exist_ok=True)
 
     parts = build_crossbars()

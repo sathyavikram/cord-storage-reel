@@ -1,42 +1,54 @@
-import sys, os
+import sys, os, math
 try:
     _script_dir = os.path.dirname(os.path.abspath(__file__))
 except NameError:
-    _script_dir = "/Users/intelligentmachine/Documents/workspace/3d-models/cord-storage-reel-v3"
+    _script_dir = os.getcwd()
 if _script_dir not in sys.path:
     sys.path.insert(0, _script_dir)
 import FreeCAD as App
 import Part
+import sys
+if "params" in sys.modules: del sys.modules["params"]
 from params import *
 
 def build_handle():
-    frame_end_z = half_axle + flange_thickness + z_gap + hub_thickness
-    z_crank = frame_end_z + 2*scale
-    crank_thickness = 12 * scale
+    # Fixed handle mount point on the right frame (not spool-mounted).
+    x_mount = frame_handle_mount_x
+    y_mount = frame_handle_mount_y
+    z_crank = right_frame_outer_z + handle_standoff
+    crank_thickness = 10 * scale
     
-    sock_outer_rad = pin_radius + 12 * scale
-    socket_body = Part.makeCylinder(sock_outer_rad, crank_thickness, App.Vector(0, 0, z_crank))
-    pin_cutout = Part.makeCylinder(pin_radius + clearance, crank_thickness, App.Vector(0, 0, z_crank))
-    crank_hub = socket_body.cut(pin_cutout)
+    socket_radius = handle_peg_radius + clearance
+    sock_outer_rad = handle_peg_radius + 10 * scale
     
-    arm_box = Part.makeBox(20*scale, hole_dist, crank_thickness, App.Vector(-10*scale, 0, z_crank))
-    arm_rounded = Part.makeCylinder(10*scale, crank_thickness, App.Vector(0, hole_dist, z_crank))
-    crank_arm = crank_hub.fuse(arm_box).fuse(arm_rounded)
+    standoff = Part.makeCylinder(sock_outer_rad, handle_standoff, App.Vector(x_mount, y_mount, right_frame_outer_z))
+    socket_body = Part.makeCylinder(sock_outer_rad, crank_thickness, App.Vector(x_mount, y_mount, z_crank))
     
-    h_shield = Part.makeCylinder(22*scale, 8*scale, App.Vector(0, hole_dist, z_crank + crank_thickness))
-    h_grip = Part.makeCylinder(14*scale, 65*scale, App.Vector(0, hole_dist, z_crank + crank_thickness + 8*scale))
+    arm_box = Part.makeBox(20*scale, hole_dist, crank_thickness, App.Vector(x_mount - 10*scale, y_mount, z_crank))
+    arm_rounded = Part.makeCylinder(10*scale, crank_thickness, App.Vector(x_mount, y_mount + hole_dist, z_crank))
+    crank_solid = standoff.fuse(socket_body).fuse(arm_box).fuse(arm_rounded)
     
-    return crank_arm.fuse(h_shield).fuse(h_grip).removeSplitter()
+    pin_cutout = Part.makeCylinder(socket_radius, crank_thickness + handle_standoff, App.Vector(x_mount, y_mount, right_frame_outer_z))
+    crank_arm = crank_solid.cut(pin_cutout)
+    
+    h_shield = Part.makeCylinder(22*scale, 8*scale, App.Vector(x_mount, y_mount + hole_dist, z_crank + crank_thickness))
+    h_grip = Part.makeCylinder(14*scale, 65*scale, App.Vector(x_mount, y_mount + hole_dist, z_crank + crank_thickness + 8*scale))
+    
+    handle = crank_arm.fuse(h_shield).fuse(h_grip).removeSplitter()
+    
+    
+    handle.rotate(App.Vector(x_mount, y_mount, 0), App.Vector(0,0,1), -25)
+    return handle
 
 if __name__ == '__main__':
     import FreeCAD as App
     import Part
     import os
 
-    doc_name = "Doc_" + os.path.basename(__file__).replace(".py", "")
+    doc_name = 'Doc_' + os.path.basename(__file__).replace('.py', '')
     doc = App.newDocument(doc_name)
 
-    export_dir = os.path.join(_script_dir, 'exports')
+    export_dir = EXPORT_DIR
     os.makedirs(export_dir, exist_ok=True)
 
     p_02_Handle = build_handle()

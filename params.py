@@ -6,7 +6,7 @@ import os
 # volume when user_scale = 1.0.
 user_scale = 1.0
 scale = user_scale * (250.0 / 332.0)
-clearance = 0.5 * scale
+clearance = 0.4 * scale
 
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 EXPORT_DIR = os.path.join(PROJECT_DIR, "exports")

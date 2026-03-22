@@ -45,6 +45,14 @@ def build_crossbars():
         tip_cone = Part.makeCone(rib_flare_radius, core_radius - (1.0*scale), tip_height, App.Vector(0,0,current_z), App.Vector(0,0,1))
         pin_L = pin_L.fuse(tip_cone)
 
+    # Cut compliance slots
+    cut_w = 2.0 * scale
+    cut_h = anchor_length + 2.0 * scale
+    box_s = 40.0 * scale
+    c1 = Part.makeBox(box_s, cut_w, cut_h, App.Vector(-box_s/2, -cut_w/2, -1.0 * scale))
+    c2 = Part.makeBox(cut_w, box_s, cut_h, App.Vector(-cut_w/2, -box_s/2, -1.0 * scale))
+    pin_L = pin_L.cut(c1).cut(c2)
+
     base_pin = pin_L
     
     def make_crossbar(pos_x, pos_y):

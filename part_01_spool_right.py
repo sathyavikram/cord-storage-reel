@@ -53,10 +53,17 @@ def build_right_spool():
         tip_cone = Part.makeCone(rib_base_radius, rib_flare_radius, tip_height, App.Vector(0,0,current_z), App.Vector(0,0,1))
         snap_peg = snap_peg.fuse(tip_cone)
 
+    cut_w = 2.0 * scale
+    cut_h = anchor_length + 2.0 * scale
+    box_s = 40.0 * scale
+    c1 = Part.makeBox(box_s, cut_w, cut_h, App.Vector(-box_s/2, -cut_w/2, -51.0 * scale))
+    c2 = Part.makeBox(cut_w, box_s, cut_h, App.Vector(-cut_w/2, -box_s/2, -51.0 * scale))
+    snap_peg = snap_peg.cut(c1).cut(c2)
+
     r_axle_peg = r_axle_peg.fuse(snap_peg)
 
     pin_base = App.Vector(0,0, half_axle + flange_thickness)
-    r_pin = Part.makeCylinder(pin_radius, right_axle_pin_length, pin_base)
+    r_pin = Part.makeCylinder(hub_hole_radius - clearance, right_axle_pin_length, pin_base)
     
     # --- Hex Handle Peg & Anchor Tip ---
     handle_hex_len = handle_standoff + 10 * scale
@@ -82,6 +89,13 @@ def build_right_spool():
     if tip_height > 0.01:
         tip_cone = Part.makeCone(h_rib_base_radius, h_rib_flare_radius, tip_height, App.Vector(0,0,anchor_base_z + curr_z), App.Vector(0,0,1))
         h_snap_peg = h_snap_peg.fuse(tip_cone)
+
+    cut_w = 2.0 * scale
+    cut_h = handle_anchor_len + 2.0 * scale
+    box_s = 40.0 * scale
+    c1 = Part.makeBox(box_s, cut_w, cut_h, App.Vector(-box_s/2, -cut_w/2, anchor_base_z - 1.0))
+    c2 = Part.makeBox(cut_w, box_s, cut_h, App.Vector(-cut_w/2, -box_s/2, anchor_base_z - 1.0))
+    h_snap_peg = h_snap_peg.cut(c1).cut(c2)
 
     r_handle_peg = r_handle_hex.fuse(h_snap_peg)
 

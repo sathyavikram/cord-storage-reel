@@ -29,7 +29,7 @@ def build_handle():
     arm_rounded = Part.makeCylinder(12*scale, crank_thickness, App.Vector(x_mount, y_mount + hole_dist, z_crank))
     crank_solid = standoff.fuse(socket_body).fuse(arm_box).fuse(arm_rounded)
     
-    h_clearance = 0.3 * scale
+    h_clearance = 0.4 * scale
     def make_hex_prism(radius, length, placement):
         import math
         pts = []
@@ -72,7 +72,7 @@ def build_handle():
     h_grip = Part.makeCylinder(18*scale, 65*scale, App.Vector(x_mount, y_mount + hole_dist, z_crank + crank_thickness + 8*scale))
     handle = crank_arm.fuse(h_shield).fuse(h_grip).removeSplitter()
     
-    handle.rotate(App.Vector(x_mount, y_mount, 0), App.Vector(0,0,1), -25)
+    handle.rotate(App.Vector(x_mount, y_mount, 0), App.Vector(0,0,1), 0)
     return handle
 
 if __name__ == '__main__':

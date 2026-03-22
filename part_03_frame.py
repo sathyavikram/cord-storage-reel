@@ -45,7 +45,7 @@ def build_frame(z_plane, is_left):
     hole_radius = 9.0 * scale
     core_radius = hole_radius - (1.5 * scale)
     rib_height = 5.0 * scale
-    clearance = 0.25 * scale # slightly larger clearance for easy lock
+    clearance = 0.4 * scale # Balanced clearance for slotted snaps
     rib_flare_radius = hole_radius + (0.6 * scale) + clearance
     rib_base_radius = core_radius + clearance
 

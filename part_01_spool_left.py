@@ -27,11 +27,11 @@ def build_left_spool():
         return prism
 
     # The main hex receiver hole
-    clearance = 0.2 * scale
-    l_axle_hole = make_hex_prism(peg_radius + clearance, 26*scale, App.Placement(App.Vector(0,0,-26*scale), App.Rotation(0,0,0,1)))
-    
+    clearance = 0.4 * scale
+    l_axle_hole = make_hex_prism(peg_radius + clearance, 25*scale, App.Placement(App.Vector(0,0,-25*scale), App.Rotation(0,0,0,1)))
+
     # --- Vertical Anchor Socket (integrated) ---
-    anchor_length = 26.0 * scale
+    anchor_length = 25.0 * scale
     hole_radius = 9.0 * scale
     core_radius = hole_radius - (1.5 * scale)
     rib_height = 5.0 * scale
@@ -39,16 +39,16 @@ def build_left_spool():
     rib_flare_radius = hole_radius + (0.6 * scale) + clearance
     rib_base_radius = core_radius + clearance
 
-    # Cutter for the female snap ribs. Extends from -52 up to -26.
-    snap_socket = Part.makeCylinder(core_radius + clearance, anchor_length, App.Vector(0,0,-52*scale), App.Vector(0,0,1))
+    # Cutter for the female snap ribs. Extends from -50 up to -25.
+    snap_socket = Part.makeCylinder(core_radius + clearance, anchor_length, App.Vector(0,0,-50*scale), App.Vector(0,0,1))
     
-    current_z = -52.0 * scale
-    while current_z + rib_height <= -26.0 * scale + 0.01:
+    current_z = -50.0 * scale
+    while current_z + rib_height <= -25.0 * scale + 0.01:
         rib = Part.makeCone(rib_base_radius, rib_flare_radius, rib_height, App.Vector(0,0,current_z), App.Vector(0,0,1))
         snap_socket = snap_socket.fuse(rib)
         current_z += rib_height
         
-    tip_height = (-26.0 * scale) - current_z
+    tip_height = (-25.0 * scale) - current_z
     if tip_height > 0.01:
         tip_cone = Part.makeCone(rib_base_radius, rib_flare_radius, tip_height, App.Vector(0,0,current_z), App.Vector(0,0,1))
         snap_socket = snap_socket.fuse(tip_cone)
@@ -56,11 +56,11 @@ def build_left_spool():
     l_axle_hole = l_axle_hole.fuse(snap_socket)
 
     left_axle_pin_length = z_gap + hub_thickness
-    l_pin_bearing = Part.makeCylinder(pin_radius, left_axle_pin_length, App.Vector(0,0, -half_axle - flange_thickness - left_axle_pin_length))
+    l_pin_bearing = Part.makeCylinder(hub_hole_radius - clearance, left_axle_pin_length, App.Vector(0,0, -half_axle - flange_thickness - left_axle_pin_length))
     
     # Left Anchor Tip
     anchor_length = 20.0 * scale
-    c_hole_radius = 9.0 * scale
+    c_hole_radius = 18.0 * scale
     c_core_radius = c_hole_radius - (1.5 * scale)
     c_rib_height = 5.0 * scale
     c_rib_flare_radius = c_hole_radius + (0.6 * scale)
@@ -80,6 +80,13 @@ def build_left_spool():
     if tip_height > 0.01:
         tip_cone = Part.makeCone(c_rib_base_radius, c_rib_flare_radius, tip_height, App.Vector(0,0,anchor_tip_z - anchor_length + curr_z), App.Vector(0,0,1))
         l_anchor = l_anchor.fuse(tip_cone)
+
+    cut_w = 2.0 * scale
+    cut_h = anchor_length + 2.0 * scale
+    box_s = 60.0 * scale
+    c1 = Part.makeBox(box_s, cut_w, cut_h, App.Vector(-box_s/2, -cut_w/2, anchor_tip_z - anchor_length - 1.0))
+    c2 = Part.makeBox(cut_w, box_s, cut_h, App.Vector(-cut_w/2, -box_s/2, anchor_tip_z - anchor_length - 1.0))
+    l_anchor = l_anchor.cut(c1).cut(c2)
 
     l_pin = l_pin_bearing.fuse(l_anchor)
     for i in range(6):

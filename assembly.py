@@ -35,7 +35,19 @@ def get_export_dir():
     return os.path.join(_script_dir, "exports", "assembly")
 
 def generate_assembly():
-    doc = App.newDocument("ReelAssembly")
+    doc_name = "ReelAssembly"
+    # Check if document already exists
+    try:
+        doc = App.getDocument(doc_name)
+    except Exception:
+        doc = None
+
+    if doc is not None:
+        # Clear existing objects so we don't duplicate them
+        for obj in doc.Objects:
+            doc.removeObject(obj.Name)
+    else:
+        doc = App.newDocument(doc_name)
 
     print("Generating Spools...")
     right_spool = build_right_spool()
@@ -52,15 +64,16 @@ def generate_assembly():
     bar1, bar2, bar3 = build_crossbars()
     
     print("Generating Caps...")
-    cap_R, cap_L = build_caps()
+    _, cap_L = build_caps()
 
     print("Constructing Assembly...")
-    assembly = Part.makeCompound([
+    assembly_parts = [
         right_spool, left_spool, handle, 
         right_frame, left_frame, 
         bar1, bar2, bar3, 
-        cap_R, cap_L
-    ])
+        cap_L
+    ]
+    assembly = Part.makeCompound(assembly_parts)
 
     obj = doc.addObject("Part::Feature", "Reel_Assembly")
     obj.Shape = assembly
@@ -78,7 +91,6 @@ def generate_assembly():
     bar1.exportStl(os.path.join(export_dir, "04_Crossbar_Front.stl"))
     bar2.exportStl(os.path.join(export_dir, "04_Crossbar_Back.stl"))
     bar3.exportStl(os.path.join(export_dir, "04_Crossbar_Top.stl"))
-    cap_R.exportStl(os.path.join(export_dir, "05_Cap_R.stl"))
     cap_L.exportStl(os.path.join(export_dir, "05_Cap_L.stl"))
 
     assembly.exportStep(os.path.join(export_dir, "00_Full_Assembly_Preview.step"))

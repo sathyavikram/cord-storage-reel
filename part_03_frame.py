@@ -12,7 +12,7 @@ import sys
 if "params" in sys.modules: del sys.modules["params"]
 from params import *
 
-def build_frame(z_plane):
+def build_frame(z_plane, is_left):
     P_hub = App.Vector(0, 0, z_plane)
     P_f = App.Vector(x_spread, y_floor, z_plane)
     P_b = App.Vector(-x_spread, y_floor, z_plane)
@@ -38,17 +38,66 @@ def build_frame(z_plane):
     
     hole = Part.makeCylinder(hub_hole_radius, hub_thickness + 10, P_hub - App.Vector(0,0,hub_thickness/2 + 5))
     
-    sock1 = Part.makeCylinder(crossbar_radius + clearance, hub_thickness + 10, P_f - App.Vector(0,0,hub_thickness/2 + 5))
-    sock2 = Part.makeCylinder(crossbar_radius + clearance, hub_thickness + 10, P_b - App.Vector(0,0,hub_thickness/2 + 5))
-    sock3 = Part.makeCylinder(crossbar_radius + clearance, hub_thickness + 10, P_t - App.Vector(0,0,hub_thickness/2 + 5))
+    # Female Anchor parameters
+    nest_depth = 5.0 * scale
+    anchor_length = 20.0 * scale
+    
+    hole_radius = 9.0 * scale
+    core_radius = hole_radius - (1.5 * scale)
+    rib_height = 5.0 * scale
+    clearance = 0.25 * scale # slightly larger clearance for easy lock
+    rib_flare_radius = hole_radius + (0.6 * scale) + clearance
+    rib_base_radius = core_radius + clearance
+
+    # Base cutter built facing +Z
+    base_cutter = Part.makeCylinder(core_radius + clearance, anchor_length, App.Vector(0,0,0), App.Vector(0,0,1))
+    current_z = 0.0
+    while current_z + rib_height <= anchor_length:
+        rib = Part.makeCone(rib_flare_radius, rib_base_radius, rib_height, App.Vector(0,0,current_z), App.Vector(0,0,1))
+        base_cutter = base_cutter.fuse(rib)
+        current_z += rib_height
+        
+    tip_height = anchor_length - current_z
+    if tip_height > 0.01:
+        tip_cone = Part.makeCone(rib_flare_radius, core_radius - (1.0*scale) + clearance, tip_height, App.Vector(0,0,current_z), App.Vector(0,0,1))
+        base_cutter = base_cutter.fuse(tip_cone)
+
+    def make_socket(pos):
+        if is_left:
+            v_dir = App.Vector(0,0,1)
+            inner_face_z = pos.z + hub_thickness/2
+            # Nest starts at inner_face_z and goes -Z for nest_depth
+            nest_z = inner_face_z - nest_depth
+            nest = Part.makeCylinder(crossbar_radius + clearance, nest_depth + 1.0, App.Vector(pos.x, pos.y, nest_z), v_dir)
+            
+            # Female anchor hole starts at nest_z and goes -Z for anchor_length
+            cutter = base_cutter.copy()
+            cutter.Placement = App.Placement(App.Vector(pos.x, pos.y, nest_z), App.Rotation(App.Vector(1,0,0), 180)) # Points -Z
+            
+        else:
+            v_dir = App.Vector(0,0,1)
+            inner_face_z = pos.z - hub_thickness/2
+            # Nest starts at inner_face_z and goes +Z for nest_depth. 
+            nest = Part.makeCylinder(crossbar_radius + clearance, nest_depth + 1.0, App.Vector(pos.x, pos.y, inner_face_z - 0.5), v_dir)
+            
+            # Female anchor hole starts at inner_face_z + nest_depth
+            anchor_z = inner_face_z + nest_depth
+            cutter = base_cutter.copy()
+            cutter.Placement = App.Placement(App.Vector(pos.x, pos.y, anchor_z), App.Rotation(0,0,0,1)) # Points +Z
+            
+        return nest.fuse(cutter)
+
+    sock1 = make_socket(P_f)
+    sock2 = make_socket(P_b)
+    sock3 = make_socket(P_t)
     
     return frame.cut(hole).cut(sock1).cut(sock2).cut(sock3).removeSplitter()
 
 def build_right_frame():
-    return build_frame(z_R)
+    return build_frame(z_R, False)
 
 def build_left_frame():
-    return build_frame(z_L)
+    return build_frame(z_L, True)
 
 if __name__ == '__main__':
     import FreeCAD as App
@@ -56,7 +105,15 @@ if __name__ == '__main__':
     import os
 
     doc_name = "Doc_" + os.path.basename(__file__).replace(".py", "")
-    doc = App.newDocument(doc_name)
+    try:
+        doc = App.getDocument(doc_name)
+    except Exception:
+        doc = None
+    if doc is not None:
+        for obj in doc.Objects:
+            doc.removeObject(obj.Name)
+    else:
+        doc = App.newDocument(doc_name)
 
     export_dir = EXPORT_DIR
     os.makedirs(export_dir, exist_ok=True)

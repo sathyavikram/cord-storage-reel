@@ -15,17 +15,41 @@ def build_caps():
     cap_thickness = 10 * scale
     cap_rad = pin_radius + 12 * scale
 
-    z_cap_bottom_R = half_axle + flange_thickness + right_pin_length - (cap_thickness - 3*scale)
-    cap_R = Part.makeCylinder(cap_rad, cap_thickness, App.Vector(0,0, z_cap_bottom_R))
-    c_R_sock = Part.makeCylinder(handle_peg_radius + clearance, cap_thickness - 3*scale, App.Vector(0,0, z_cap_bottom_R))
-    cap_R = cap_R.cut(c_R_sock)
+    # Left Cap Only (Snaps onto left anchor)
+    anchor_length = 20.0 * scale
+    
+    c_hole_radius = 9.0 * scale
+    c_core_radius = c_hole_radius - (1.5 * scale)
+    c_rib_height = 5.0 * scale
+    c_clearance = 0.25 * scale
+    c_rib_flare_radius = c_hole_radius + (0.6 * scale) + c_clearance
+    c_rib_base_radius = c_core_radius + c_clearance
 
-    z_cap_bottom_L = -half_axle - flange_thickness - left_pin_length + (cap_thickness - 3*scale)
-    cap_L = Part.makeCylinder(cap_rad, cap_thickness, App.Vector(0,0, z_cap_bottom_L - cap_thickness))
-    c_L_sock = Part.makeCylinder(pin_radius + clearance, cap_thickness - 3*scale, App.Vector(0,0, z_cap_bottom_L - (cap_thickness - 3*scale)))
+    left_axle_pin_length = z_gap + hub_thickness
+    anchor_tip_z = -half_axle - flange_thickness - left_axle_pin_length
+    # Cap fits over the 20mm anchor_length
+    z_cap_bottom_L = anchor_tip_z - anchor_length
+    
+    # Cap body needs to be tall enough to house the 20mm socket + outer wall
+    cap_h = anchor_length + 5*scale
+    cap_L = Part.makeCylinder(cap_rad, cap_h, App.Vector(0,0, z_cap_bottom_L))
+    
+    c_L_sock = Part.makeCylinder(c_core_radius + c_clearance, anchor_length + 1, App.Vector(0,0, z_cap_bottom_L), App.Vector(0,0,1))
+    
+    curr_z = 0.0
+    while curr_z + c_rib_height <= anchor_length:
+        rib = Part.makeCone(c_rib_base_radius, c_rib_flare_radius, c_rib_height, App.Vector(0,0,z_cap_bottom_L + curr_z), App.Vector(0,0,1))
+        c_L_sock = c_L_sock.fuse(rib)
+        curr_z += c_rib_height
+        
+    tip_height = anchor_length - curr_z
+    if tip_height > 0.01:
+        tip_cone = Part.makeCone(c_rib_base_radius, c_rib_flare_radius, tip_height, App.Vector(0,0,z_cap_bottom_L + curr_z), App.Vector(0,0,1))
+        c_L_sock = c_L_sock.fuse(tip_cone)
+
     cap_L = cap_L.cut(c_L_sock)
 
-    return cap_R, cap_L
+    return None, cap_L
 
 if __name__ == '__main__':
     import FreeCAD as App
@@ -33,7 +57,15 @@ if __name__ == '__main__':
     import os
 
     doc_name = "Doc_" + os.path.basename(__file__).replace(".py", "")
-    doc = App.newDocument(doc_name)
+    try:
+        doc = App.getDocument(doc_name)
+    except Exception:
+        doc = None
+    if doc is not None:
+        for obj in doc.Objects:
+            doc.removeObject(obj.Name)
+    else:
+        doc = App.newDocument(doc_name)
 
     export_dir = EXPORT_DIR
     os.makedirs(export_dir, exist_ok=True)

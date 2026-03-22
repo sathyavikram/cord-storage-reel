@@ -55,7 +55,7 @@ def build_left_spool():
 
     l_axle_hole = l_axle_hole.fuse(snap_socket)
 
-    left_axle_pin_length = z_gap + hub_thickness
+    left_axle_pin_length = z_gap + hub_thickness + (5.0 * scale)
     l_pin_bearing = Part.makeCylinder(hub_hole_radius - clearance, left_axle_pin_length, App.Vector(0,0, -half_axle - flange_thickness - left_axle_pin_length))
     
     # Left Anchor Tip

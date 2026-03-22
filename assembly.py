@@ -32,7 +32,7 @@ from part_05_caps import build_caps
 
 
 def get_export_dir():
-    return os.path.join(_script_dir, "exports", "assembly")
+    return os.path.join(_script_dir, "exports")
 
 def generate_assembly():
     doc_name = "ReelAssembly"
@@ -83,6 +83,8 @@ def generate_assembly():
         os.makedirs(export_dir)
 
     print(f"Exporting files to {export_dir}...")
+    
+    # Export STL
     right_spool.exportStl(os.path.join(export_dir, "01_Spool_Right.stl"))
     left_spool.exportStl(os.path.join(export_dir, "01_Spool_Left.stl"))
     handle.exportStl(os.path.join(export_dir, "02_Handle.stl"))
@@ -93,7 +95,19 @@ def generate_assembly():
     bar3.exportStl(os.path.join(export_dir, "04_Crossbar_Top.stl"))
     cap_L.exportStl(os.path.join(export_dir, "05_Cap_L.stl"))
 
+    # Export STEP
+    right_spool.exportStep(os.path.join(export_dir, "01_Spool_Right.step"))
+    left_spool.exportStep(os.path.join(export_dir, "01_Spool_Left.step"))
+    handle.exportStep(os.path.join(export_dir, "02_Handle.step"))
+    left_frame.exportStep(os.path.join(export_dir, "03_Frame_Left.step"))
+    right_frame.exportStep(os.path.join(export_dir, "03_Frame_Right.step"))
+    bar1.exportStep(os.path.join(export_dir, "04_Crossbar_Front.step"))
+    bar2.exportStep(os.path.join(export_dir, "04_Crossbar_Back.step"))
+    bar3.exportStep(os.path.join(export_dir, "04_Crossbar_Top.step"))
+    cap_L.exportStep(os.path.join(export_dir, "05_Cap_L.step"))
+
     assembly.exportStep(os.path.join(export_dir, "00_Full_Assembly_Preview.step"))
+    assembly.exportStl(os.path.join(export_dir, "00_Full_Assembly_Preview.stl"))
     print("Generation complete!")
 
 if __name__ == "__main__":

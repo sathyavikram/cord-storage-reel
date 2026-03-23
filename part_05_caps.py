@@ -26,9 +26,11 @@ def build_caps():
     c_rib_flare_radius = c_hole_radius + (0.6 * scale) + c_clearance
     c_rib_base_radius = c_core_radius + c_clearance
 
+    # We want a 5mm visual gap between the outside of the frame and the cap
     left_axle_pin_length = z_gap + hub_thickness + (5.0 * scale)
     anchor_tip_z = -half_axle - flange_thickness - left_axle_pin_length
-    # Cap fits over the 20mm anchor_length
+    
+    # Push the cap's bottom out further so the geometry actually leaves a 5mm gap
     z_cap_bottom_L = anchor_tip_z - anchor_length - 5*scale
     
     # Cap body needs to be tall enough to house the 20mm socket + outer wall

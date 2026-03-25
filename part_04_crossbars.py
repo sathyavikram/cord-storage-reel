@@ -11,63 +11,49 @@ import sys
 if "params" in sys.modules: del sys.modules["params"]
 from params import *
 
-
 def build_crossbars():
-    nest_depth = 5.0 * scale
-    anchor_length = 20.0 * scale
+    nest_depth = 8.0 * scale
     
-    # Inner face boundaries
     inner_L = z_L + hub_thickness/2
     inner_R = z_R - hub_thickness/2
     
-    # Ends of the main crossbar cylinder (it enters the nest)
     start_z = inner_L - nest_depth
     end_z = inner_R + nest_depth
     bar_len = end_z - start_z
     
-    # Pin parameters
-    hole_radius = 9.0 * scale
-    core_radius = hole_radius - (1.5 * scale)
-    rib_height = 5.0 * scale
-    rib_flare_radius = hole_radius + (0.6 * scale)
-    rib_base_radius = core_radius
+    t_pitch = 4.0 * scale
+    t_radius = 8.0 * scale + 0.4 * scale
+    t_length = 35.0 * scale
+    t_r_inner = 8.0 * scale - (t_pitch * 0.45) + 0.4 * scale
 
-    # Cutter (now it's an additive pin pointing +Z)
-    pin_L = Part.makeCylinder(core_radius, anchor_length, App.Vector(0,0,0), App.Vector(0,0,1))
-    current_z = 0.0
-    while current_z + rib_height <= anchor_length:
-        rib = Part.makeCone(rib_flare_radius, rib_base_radius, rib_height, App.Vector(0,0,current_z), App.Vector(0,0,1))
-        pin_L = pin_L.fuse(rib)
-        current_z += rib_height
-        
-    tip_height = anchor_length - current_z
-    if tip_height > 0.01:
-        tip_cone = Part.makeCone(rib_flare_radius, core_radius - (1.0*scale), tip_height, App.Vector(0,0,current_z), App.Vector(0,0,1))
-        pin_L = pin_L.fuse(tip_cone)
-
-    # Cut compliance slots
-    cut_w = 2.0 * scale
-    cut_h = anchor_length + 2.0 * scale
-    box_s = 40.0 * scale
-    c1 = Part.makeBox(box_s, cut_w, cut_h, App.Vector(-box_s/2, -cut_w/2, -1.0 * scale))
-    c2 = Part.makeBox(cut_w, box_s, cut_h, App.Vector(-cut_w/2, -box_s/2, -1.0 * scale))
-    pin_L = pin_L.cut(c1).cut(c2)
-
-    base_pin = pin_L
+    inner_X = t_r_inner - 2.0 * scale
+    p1 = App.Vector(inner_X, 0, -t_pitch*0.35)
+    p2 = App.Vector(t_radius, 0, -t_pitch*0.1)
+    p3 = App.Vector(t_radius, 0,  t_pitch*0.1)
+    p4 = App.Vector(inner_X, 0,  t_pitch*0.35)
+    t_wire = Part.Wire(Part.makePolygon([p1, p2, p3, p4, p1]))
     
+    t_helix = Part.makeHelix(t_pitch, t_length, t_r_inner, 0)
+    t_sweep = Part.Wire(t_helix).makePipeShell([t_wire], True, True)
+    t_core = Part.makeCylinder(t_r_inner, t_length, App.Vector(0,0,0))
+    thread_cutter = t_core.fuse(t_sweep)
+    
+    chamfer = Part.makeCone(t_radius + 2.0, t_r_inner, t_pitch, App.Vector(0,0,0))
+    thread_cutter = thread_cutter.fuse(chamfer)
+    
+    tip_bore = Part.makeCylinder(t_r_inner, 5.0 * scale, App.Vector(0,0,t_length-5.0*scale))
+    thread_cutter = thread_cutter.fuse(tip_bore)
+
     def make_crossbar(pos_x, pos_y):
-        # The main bar body (including nest depth)
         bar = Part.makeCylinder(crossbar_radius, bar_len, App.Vector(pos_x, pos_y, start_z))
         
-        # Left Pin (pointing -Z from start_z)
-        pL = base_pin.copy()
-        pL.Placement = App.Placement(App.Vector(pos_x, pos_y, start_z), App.Rotation(App.Vector(1,0,0), 180)) # Rotated 180 on X to point -Z
+        cutL = thread_cutter.copy()
+        cutL.Placement = App.Placement(App.Vector(pos_x, pos_y, start_z - 1.0), App.Rotation(0,0,0,1))
         
-        # Right Pin (pointing +Z from end_z)
-        pR = base_pin.copy()
-        pR.Placement = App.Placement(App.Vector(pos_x, pos_y, end_z), App.Rotation(0,0,0,1))
+        cutR = thread_cutter.copy()
+        cutR.Placement = App.Placement(App.Vector(pos_x, pos_y, end_z + 1.0), App.Rotation(App.Vector(1,0,0), 180))
         
-        return bar.fuse(pL).fuse(pR).removeSplitter()
+        return bar.cut(cutL).cut(cutR).removeSplitter()
 
     bar1 = make_crossbar(x_spread, y_floor)
     bar2 = make_crossbar(-x_spread, y_floor)

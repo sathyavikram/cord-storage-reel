@@ -15,43 +15,48 @@ def build_caps():
     cap_thickness = 10 * scale
     cap_rad = hub_radius
 
-    # Left Cap Only (Snaps onto left anchor)
-    anchor_length = 20.0 * scale
-    
-    c_hole_radius = 18.0 * scale
-    c_core_radius = c_hole_radius - (1.5 * scale)
-    c_rib_height = 5.0 * scale
-    c_clearance = 0.4 * scale
-    z_clearance = 0.2 * scale
-    c_rib_flare_radius = c_hole_radius + (0.6 * scale) + c_clearance
-    c_rib_base_radius = c_core_radius + c_clearance
-
     # We want a 5mm visual gap between the outside of the frame and the cap
     left_axle_pin_length = z_gap + hub_thickness + (5.0 * scale)
     anchor_tip_z = -half_axle - flange_thickness - left_axle_pin_length
     
-    # Push the cap's bottom out further so the geometry actually leaves a 5mm gap
-    z_cap_bottom_L = anchor_tip_z - anchor_length - 5*scale
+    # Cap body
+    cap_h = cap_thickness
+    cap_L = Part.makeCylinder(cap_rad, cap_h, App.Vector(0,0, anchor_tip_z - cap_h))
     
-    # Cap body needs to be tall enough to house the 20mm socket + outer wall
-    cap_h = anchor_length + 5*scale
-    cap_L = Part.makeCylinder(cap_rad, cap_h, App.Vector(0,0, z_cap_bottom_L))
+    # Male Threaded Peg - Nominal dimensions, clearance handled in female socket
+    t_pitch = 5.0 * scale
+    t_radius = 25.0 * scale  # Nominal radius
+    t_length = 24.0 * scale
+    t_r_inner = 25.0 * scale - (t_pitch * 0.45)  # Nominal root radius
     
-    c_L_sock = Part.makeCylinder(c_core_radius + c_clearance, anchor_length + 1,
- App.Vector(0,0, anchor_tip_z - anchor_length - 0.5), App.Vector(0,0,1))
+    t_helix = Part.makeHelix(t_pitch, t_length, t_r_inner, 0)
+    t_helix.Placement = App.Placement(App.Vector(0,0,anchor_tip_z), App.Rotation(0,0,0,1))
     
-    curr_z = 0.0
-    while curr_z + c_rib_height <= anchor_length:
-        rib = Part.makeCone(c_rib_base_radius, c_rib_flare_radius, c_rib_height + z_clearance, App.Vector(0,0, anchor_tip_z - anchor_length + curr_z - z_clearance), App.Vector(0,0,1))
-        c_L_sock = c_L_sock.fuse(rib)
-        curr_z += c_rib_height
-        
-    tip_height = anchor_length - curr_z
-    if tip_height > 0.01:
-        tip_cone = Part.makeCone(c_rib_base_radius, c_rib_flare_radius, tip_height + z_clearance, App.Vector(0,0, anchor_tip_z - anchor_length + curr_z - z_clearance), App.Vector(0,0,1))
-        c_L_sock = c_L_sock.fuse(tip_cone)
+    inner_X = t_r_inner - 2.0 * scale
+    p1 = App.Vector(inner_X, 0, -t_pitch*0.35 + anchor_tip_z)
+    p2 = App.Vector(t_radius, 0, -t_pitch*0.1 + anchor_tip_z)
+    p3 = App.Vector(t_radius, 0,  t_pitch*0.1 + anchor_tip_z)
+    p4 = App.Vector(inner_X, 0,  t_pitch*0.35 + anchor_tip_z)
+    t_wire = Part.Wire(Part.makePolygon([p1, p2, p3, p4, p1]))
+    
+    t_sweep = Part.Wire(t_helix).makePipeShell([t_wire], True, True)
+    t_core = Part.makeCylinder(t_r_inner, t_length, App.Vector(0,0,anchor_tip_z))
+    
+    thread_peg = t_core.fuse(t_sweep)
+    
+    # Bevel tip
+    bevel = Part.makeCone(t_radius + 2, t_r_inner, t_pitch/2 + 2, App.Vector(0,0,anchor_tip_z + t_length - t_pitch/2 - 2))
+    thread_peg = thread_peg.cut(Part.makeCylinder(t_radius + 5, t_pitch + 2, App.Vector(0,0,anchor_tip_z + t_length - 2)).cut(bevel))
 
-    cap_L = cap_L.cut(c_L_sock)
+    cap_L = cap_L.fuse(thread_peg)
+
+    # Flathead screwdriver slot for grip
+    slot_width = 3.0 * scale
+    slot_length = cap_rad * 2 + 1.0
+    slot_depth = 4.0 * scale
+    slot = Part.makeBox(slot_length, slot_width, slot_depth, 
+                        App.Vector(-slot_length/2, -slot_width/2, anchor_tip_z - cap_h - 0.1))
+    cap_L = cap_L.cut(slot)
 
     return None, cap_L
 
@@ -76,10 +81,7 @@ if __name__ == '__main__':
 
     parts = build_caps()
     if parts[0] is not None:
-        Part.show(parts[0], 'CapRight')
-        print(f'Exporting 05_Cap_R...')
-        parts[0].exportStl(os.path.join(export_dir, '05_Cap_R.stl'))
-        parts[0].exportStep(os.path.join(export_dir, '05_Cap_R.step'))
+        pass
         
     if parts[1] is not None:
         Part.show(parts[1], 'CapLeft')

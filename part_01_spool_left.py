@@ -14,8 +14,9 @@ from params import *
 
 def build_left_spool():
     l_flange = Part.makeCylinder(flange_radius, flange_thickness, App.Vector(0,0, -half_axle - flange_thickness))
-    l_axle = Part.makeCylinder(axle_radius, half_axle, App.Vector(0,0,-half_axle))
-    
+    # 70% Axle length: Goes from Z=-80 to Z=32 (112mm total)
+    l_axle = Part.makeCylinder(axle_radius, 112 * scale, App.Vector(0,0,-half_axle))
+
     def make_hex_prism(radius, length, placement):
         pts = []
         for i in range(7):
@@ -26,84 +27,105 @@ def build_left_spool():
         prism.Placement = placement
         return prism
 
-    # The main hex receiver hole
-    clearance = 0.4 * scale
-    l_axle_hole = make_hex_prism(peg_radius + clearance, 25*scale, App.Placement(App.Vector(0,0,-25*scale), App.Rotation(0,0,0,1)))
+    # The main hex receiver hole (from Z=31 to Z=55)
+    clearance_amount = 0.4 * scale
+    l_axle_hole = make_hex_prism(peg_radius + clearance_amount, 70*scale, App.Placement(App.Vector(0,0,-37.0*scale), App.Rotation(0,0,0,1)))
 
-    # --- Vertical Anchor Socket (integrated) ---
-    anchor_length = 25.0 * scale
-    hole_radius = 9.0 * scale
-    core_radius = hole_radius - (1.5 * scale)
-    rib_height = 5.0 * scale
+    # --- Internal Thread Cutter for Center Bolt ---
+    # Threading the inner bore from Z=5 to Z=55 (50mm length)
+    t_pitch = 5.0 * scale
+    t_radius = 12.0 * scale + clearance_amount  # Increased diameter
+    t_start = -73.0 * scale
+    t_length = 50.0 * scale
+    t_r_inner = 12.0 * scale - (t_pitch * 0.45) + clearance_amount
     
-    rib_flare_radius = hole_radius + (0.6 * scale) + clearance
-    rib_base_radius = core_radius + clearance
-
-    # Cutter for the female snap ribs. Extends from -50 up to -25.
-    snap_socket = Part.makeCylinder(core_radius + clearance, anchor_length, App.Vector(0,0,-50*scale), App.Vector(0,0,1))
+    t_helix = Part.makeHelix(t_pitch, t_length, t_r_inner, 0)
+    t_helix.Placement = App.Placement(App.Vector(0,0,t_start), App.Rotation(0,0,0,1))
     
-    current_z = -50.0 * scale
-    while current_z + rib_height <= -25.0 * scale + 0.01:
-        rib = Part.makeCone(rib_base_radius, rib_flare_radius, rib_height, App.Vector(0,0,current_z), App.Vector(0,0,1))
-        snap_socket = snap_socket.fuse(rib)
-        current_z += rib_height
-        
-    tip_height = (-25.0 * scale) - current_z
-    if tip_height > 0.01:
-        tip_cone = Part.makeCone(rib_base_radius, rib_flare_radius, tip_height, App.Vector(0,0,current_z), App.Vector(0,0,1))
-        snap_socket = snap_socket.fuse(tip_cone)
+    inner_X = t_r_inner - 2.0 * scale
+    p1 = App.Vector(inner_X, 0, -t_pitch*0.35 + t_start)
+    p2 = App.Vector(t_radius, 0, -t_pitch*0.1 + t_start)
+    p3 = App.Vector(t_radius, 0,  t_pitch*0.1 + t_start)
+    p4 = App.Vector(inner_X, 0,  t_pitch*0.35 + t_start)
+    t_wire = Part.Wire(Part.makePolygon([p1, p2, p3, p4, p1]))
+    
+    t_sweep = Part.Wire(t_helix).makePipeShell([t_wire], True, True)
+    t_core = Part.makeCylinder(t_r_inner, t_length + 25.0 * scale, App.Vector(0, 0, t_start - 25.0 * scale))
+    
+    thread_cutter = t_core.fuse(t_sweep)
+    
+    # Optional chamfer for the thread entrance to help align the bolt at Z=55
+    
+    
 
-    l_axle_hole = l_axle_hole.fuse(snap_socket)
+    
+
+    # Allow space for the bolt tip extending further if necessary
+    
+    
 
     left_axle_pin_length = z_gap + hub_thickness + (5.0 * scale)
-    l_pin_bearing = Part.makeCylinder(hub_hole_radius - clearance, left_axle_pin_length, App.Vector(0,0, -half_axle - flange_thickness - left_axle_pin_length))
-    
-    # Left Anchor Tip
-    anchor_length = 20.0 * scale
-    c_hole_radius = 18.0 * scale
-    c_core_radius = c_hole_radius - (1.5 * scale)
-    c_rib_height = 5.0 * scale
-    c_rib_flare_radius = c_hole_radius + (0.6 * scale)
-    c_rib_base_radius = c_core_radius
-    
-    # Starts at the end of the bearing, points in -Z
+    l_pin_bearing = Part.makeCylinder(hub_hole_radius - clearance_amount, left_axle_pin_length, App.Vector(0,0, -half_axle - flange_thickness - left_axle_pin_length))
+
+    # Left Outer Cap Socket (Female Thread) - Extended to cut through flange and axle
     anchor_tip_z = -half_axle - flange_thickness - left_axle_pin_length
-    l_anchor = Part.makeCylinder(c_core_radius, anchor_length, App.Vector(0,0,anchor_tip_z - anchor_length), App.Vector(0,0,1))
     
-    curr_z = 0.0
-    while curr_z + c_rib_height <= anchor_length:
-        rib = Part.makeCone(c_rib_base_radius, c_rib_flare_radius, c_rib_height, App.Vector(0,0,anchor_tip_z - anchor_length + curr_z), App.Vector(0,0,1))
-        l_anchor = l_anchor.fuse(rib)
-        curr_z += c_rib_height
-        
-    tip_height = anchor_length - curr_z
-    if tip_height > 0.01:
-        tip_cone = Part.makeCone(c_rib_base_radius, c_rib_flare_radius, tip_height, App.Vector(0,0,anchor_tip_z - anchor_length + curr_z), App.Vector(0,0,1))
-        l_anchor = l_anchor.fuse(tip_cone)
+    c_pitch = 5.0 * scale
+    c_radius = 25.0 * scale + clearance_amount  # Increased diameter for better cut
+    c_length = 40.0 * scale  # Extended length to cut through flange (15mm) and into axle
+    c_r_inner = 25.0 * scale - (c_pitch * 0.45) + clearance_amount
+    
+    c_helix = Part.makeHelix(c_pitch, c_length, c_r_inner, 0)
+    c_helix.Placement = App.Placement(App.Vector(0,0,anchor_tip_z - 1.0), App.Rotation(0,0,0,1))
+    
+    inner_X = c_r_inner - 2.0 * scale
+    p1 = App.Vector(inner_X, 0, -c_pitch*0.35 + anchor_tip_z - 1.0)
+    p2 = App.Vector(c_radius, 0, -c_pitch*0.1 + anchor_tip_z - 1.0)
+    p3 = App.Vector(c_radius, 0,  c_pitch*0.1 + anchor_tip_z - 1.0)
+    p4 = App.Vector(inner_X, 0,  c_pitch*0.35 + anchor_tip_z - 1.0)
+    c_wire = Part.Wire(Part.makePolygon([p1, p2, p3, p4, p1]))
+    
+    c_sweep = Part.Wire(c_helix).makePipeShell([c_wire], True, True)
+    c_core = Part.makeCylinder(c_r_inner, c_length, App.Vector(0,0,anchor_tip_z - 1.0))
+    
+    cap_cutter = c_core.fuse(c_sweep)
+    
+    chamfer = Part.makeCone(c_radius + 2, c_r_inner, c_pitch/2 + 2, App.Vector(0,0,anchor_tip_z))
+    cap_cutter = cap_cutter.fuse(chamfer)
 
-    cut_w = 2.0 * scale
-    cut_h = anchor_length + 2.0 * scale
-    box_s = 60.0 * scale
-    c1 = Part.makeBox(box_s, cut_w, cut_h, App.Vector(-box_s/2, -cut_w/2, anchor_tip_z - anchor_length - 1.0))
-    c2 = Part.makeBox(cut_w, box_s, cut_h, App.Vector(-cut_w/2, -box_s/2, anchor_tip_z - anchor_length - 1.0))
-    l_anchor = l_anchor.cut(c1).cut(c2)
-
-    l_pin = l_pin_bearing.fuse(l_anchor)
     for i in range(6):
         angle = math.radians(i * 60)
         hx = hole_dist * math.cos(angle)
         hy = hole_dist * math.sin(angle)
         cutter = Part.makeCylinder(hole_radius, flange_thickness + 10, App.Vector(hx, hy, -half_axle - flange_thickness - 5))
         l_flange = l_flange.cut(cutter)
-        
-    left_spool = l_flange.fuse(l_axle).fuse(l_pin).cut(l_axle_hole)
+    
+    # Build spool and cut cap socket through all components (flange, axle, pin)
+    
+    left_spool = l_flange.fuse(l_axle).fuse(l_pin_bearing)
+    
+    # Unified thread cutter
+    thread_cutter = t_core.fuse(t_sweep).removeSplitter()
+    
+    # Cap cutter
+    cap_cutter = cap_cutter.removeSplitter()
+    
+    left_spool = left_spool.cut(l_axle_hole)
+    left_spool = left_spool.cut(thread_cutter)
+    left_spool = left_spool.cut(cap_cutter)
+    
+    return left_spool.removeSplitter()
+    
+    # Cap cutter
+    cap_cutter = cap_cutter.removeSplitter()
+    
+    left_spool = left_spool.cut(l_axle_hole)
+    left_spool = left_spool.cut(thread_cutter)
+    left_spool = left_spool.cut(cap_cutter)
+    
     return left_spool.removeSplitter()
 
 if __name__ == '__main__':
-    import FreeCAD as App
-    import Part
-    import os
-
     doc_name = "Doc_" + os.path.basename(__file__).replace(".py", "")
     try:
         doc = App.getDocument(doc_name)
@@ -120,6 +142,6 @@ if __name__ == '__main__':
 
     p_01_Spool_Left = build_left_spool()
     Part.show(p_01_Spool_Left, 'LeftSpool')
-    print(f'Exporting 01_Spool_Left 1...')
+    print(f'Exporting 01_Spool_Left...')
     p_01_Spool_Left.exportStl(os.path.join(export_dir, '01_Spool_Left.stl'))
     p_01_Spool_Left.exportStep(os.path.join(export_dir, '01_Spool_Left.step'))

@@ -11,24 +11,30 @@ if _script_dir not in sys.path:
 
 import part_01_spool_right
 import part_01_spool_left
+import part_01_center_bolt
 import part_02_handle
 import part_03_frame
 import part_04_crossbars
 import part_05_caps
+import part_04_fasteners
 
 importlib.reload(part_01_spool_right)
 importlib.reload(part_01_spool_left)
+importlib.reload(part_01_center_bolt)
 importlib.reload(part_02_handle)
 importlib.reload(part_03_frame)
 importlib.reload(part_04_crossbars)
 importlib.reload(part_05_caps)
+importlib.reload(part_04_fasteners)
 
 from part_01_spool_right import build_right_spool
 from part_01_spool_left import build_left_spool
+from part_01_center_bolt import build_printed_bolt
 from part_02_handle import build_handle
 from part_03_frame import build_right_frame, build_left_frame
 from part_04_crossbars import build_crossbars
 from part_05_caps import build_caps
+from part_04_fasteners import build_fastener
 
 
 def get_export_dir():
@@ -66,12 +72,18 @@ def generate_assembly():
     print("Generating Caps...")
     _, cap_L = build_caps()
 
+    print("Generating Center Bolt...")
+    center_bolt = build_printed_bolt()
+
+    print("Generating Fasteners...")
+    fastener = build_fastener()
+
     print("Constructing Assembly...")
     assembly_parts = [
         right_spool, left_spool, handle, 
         right_frame, left_frame, 
         bar1, bar2, bar3, 
-        cap_L
+        cap_L, center_bolt, fastener
     ]
     assembly = Part.makeCompound(assembly_parts)
 
@@ -94,6 +106,8 @@ def generate_assembly():
     bar2.exportStl(os.path.join(export_dir, "04_Crossbar_Back.stl"))
     bar3.exportStl(os.path.join(export_dir, "04_Crossbar_Top.stl"))
     cap_L.exportStl(os.path.join(export_dir, "05_Cap_L.stl"))
+    center_bolt.exportStl(os.path.join(export_dir, "01_Center_Bolt.stl"))
+    fastener.exportStl(os.path.join(export_dir, "04_Frame_Bolt.stl"))
 
     # Export STEP
     right_spool.exportStep(os.path.join(export_dir, "01_Spool_Right.step"))
@@ -105,6 +119,8 @@ def generate_assembly():
     bar2.exportStep(os.path.join(export_dir, "04_Crossbar_Back.step"))
     bar3.exportStep(os.path.join(export_dir, "04_Crossbar_Top.step"))
     cap_L.exportStep(os.path.join(export_dir, "05_Cap_L.step"))
+    center_bolt.exportStep(os.path.join(export_dir, "01_Center_Bolt.step"))
+    fastener.exportStep(os.path.join(export_dir, "04_Frame_Bolt.step"))
 
     assembly.exportStep(os.path.join(export_dir, "00_Full_Assembly_Preview.step"))
     assembly.exportStl(os.path.join(export_dir, "00_Full_Assembly_Preview.stl"))

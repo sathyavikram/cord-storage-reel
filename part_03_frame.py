@@ -38,52 +38,49 @@ def build_frame(z_plane, is_left):
     
     hole = Part.makeCylinder(hub_hole_radius, hub_thickness + 10, P_hub - App.Vector(0,0,hub_thickness/2 + 5))
     
-    # Female Anchor parameters
-    nest_depth = 5.0 * scale
-    anchor_length = 20.0 * scale
+    # Fastener through-hole parameters
+    nest_depth = 8.0 * scale
+    clearance = 0.4 * scale
     
-    hole_radius = 9.0 * scale
-    core_radius = hole_radius - (1.5 * scale)
-    rib_height = 5.0 * scale
-    clearance = 0.4 * scale # Balanced clearance for slotted snaps
-    rib_flare_radius = hole_radius + (0.6 * scale) + clearance
-    rib_base_radius = core_radius + clearance
-
-    # Base cutter built facing +Z
-    base_cutter = Part.makeCylinder(core_radius + clearance, anchor_length, App.Vector(0,0,0), App.Vector(0,0,1))
-    current_z = 0.0
-    while current_z + rib_height <= anchor_length:
-        rib = Part.makeCone(rib_flare_radius, rib_base_radius, rib_height, App.Vector(0,0,current_z), App.Vector(0,0,1))
-        base_cutter = base_cutter.fuse(rib)
-        current_z += rib_height
-        
-    tip_height = anchor_length - current_z
-    if tip_height > 0.01:
-        tip_cone = Part.makeCone(rib_flare_radius, core_radius - (1.0*scale) + clearance, tip_height, App.Vector(0,0,current_z), App.Vector(0,0,1))
-        base_cutter = base_cutter.fuse(tip_cone)
-
+    cb_radius = 14.5 * scale
+    cb_depth = 10.5 * scale
+    shaft_radius = 8.5 * scale
+    
+    # Generic through hole going from outer face to inner face
+    # We will position it based on left/right frame
+    
     def make_socket(pos):
         if is_left:
             v_dir = App.Vector(0,0,1)
             inner_face_z = pos.z + hub_thickness/2
+            outer_face_z = pos.z - hub_thickness/2
+            
             # Nest starts at inner_face_z and goes -Z for nest_depth
             nest_z = inner_face_z - nest_depth
             nest = Part.makeCylinder(crossbar_radius + clearance, nest_depth + 1.0, App.Vector(pos.x, pos.y, nest_z), v_dir)
             
-            # Female anchor hole starts at nest_z and goes -Z for anchor_length
-            cutter = base_cutter.copy()
-            cutter.Placement = App.Placement(App.Vector(pos.x, pos.y, nest_z), App.Rotation(App.Vector(1,0,0), 180)) # Points -Z
+            # Counterbore from outer face (+Z direction)
+            cb = Part.makeCylinder(cb_radius, cb_depth + 1.0, App.Vector(pos.x, pos.y, outer_face_z - 0.5), v_dir)
+            
+            # Smooth shaft through hole (goes entirely through the remaining space)
+            shaft = Part.makeCylinder(shaft_radius, hub_thickness - nest_depth + 1.0, App.Vector(pos.x, pos.y, outer_face_z), v_dir)
+            cutter = cb.fuse(shaft)
             
         else:
             v_dir = App.Vector(0,0,1)
             inner_face_z = pos.z - hub_thickness/2
-            # Nest starts at inner_face_z and goes +Z for nest_depth. 
+            outer_face_z = pos.z + hub_thickness/2
+            
+            # Nest starts at inner_face_z and goes +Z for nest_depth
             nest = Part.makeCylinder(crossbar_radius + clearance, nest_depth + 1.0, App.Vector(pos.x, pos.y, inner_face_z - 0.5), v_dir)
             
-            # Female anchor hole starts at inner_face_z + nest_depth
-            anchor_z = inner_face_z + nest_depth
-            cutter = base_cutter.copy()
-            cutter.Placement = App.Placement(App.Vector(pos.x, pos.y, anchor_z), App.Rotation(0,0,0,1)) # Points +Z
+            # Counterbore from outer face (-Z direction)
+            cb = Part.makeCylinder(cb_radius, cb_depth + 1.0, App.Vector(pos.x, pos.y, outer_face_z - cb_depth + 0.5), v_dir)
+            
+            # Smooth shaft through hole 
+            shaft_z_start = outer_face_z - (hub_thickness - nest_depth + 1.0)
+            shaft = Part.makeCylinder(shaft_radius, hub_thickness - nest_depth + 1.0, App.Vector(pos.x, pos.y, shaft_z_start), v_dir)
+            cutter = cb.fuse(shaft)
             
         return nest.fuse(cutter)
 

@@ -46,3 +46,4 @@ Icon
 
 # Note: 3D model export files (*.step, *.stl, *.3mf) are intentionally NOT ignored
 # so they can be pushed to the repository.
+exports/

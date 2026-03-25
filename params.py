@@ -38,7 +38,7 @@ left_pin_length = z_gap + hub_thickness + cap_depth
 # Spool Cutouts & Pegs
 hole_radius = 30 * scale
 hole_dist = 70 * scale
-handle_peg_radius = 12 * scale
+handle_peg_radius = 18 * scale
 peg_radius = axle_radius - (10 * scale)
 
 # Absolute Z planes for the frame structures

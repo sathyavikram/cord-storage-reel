@@ -84,5 +84,5 @@ if True:
     p_01_Bolt = build_printed_bolt()
     Part.show(p_01_Bolt, 'CenterBolt')
     print(f'Exporting 01_Center_Bolt...')
-    # p_01_Bolt.exportStl(os.path.join(export_dir, '01_Center_Bolt.stl'))
+    p_01_Bolt.exportStl(os.path.join(export_dir, '01_Center_Bolt.stl'))
     p_01_Bolt.exportStep(os.path.join(export_dir, '01_Center_Bolt.step'))

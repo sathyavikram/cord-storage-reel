@@ -55,7 +55,7 @@ def build_right_spool():
     # Split cutter into core and sweep manually
     
     pin_base = App.Vector(0,0, half_axle + flange_thickness)
-    r_pin = Part.makeCylinder(hub_hole_radius - clearance_amount, right_axle_pin_length, pin_base)
+    r_pin = Part.makeCylinder(pin_radius, right_axle_pin_length, pin_base)
     
     # --- Hex Handle Peg & Anchor Tip ---
     handle_hex_len = handle_standoff + 10 * scale

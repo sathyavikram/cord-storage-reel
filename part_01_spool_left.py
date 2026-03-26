@@ -65,7 +65,7 @@ def build_left_spool():
     
 
     left_axle_pin_length = z_gap + hub_thickness + (5.0 * scale)
-    l_pin_bearing = Part.makeCylinder(hub_hole_radius - clearance_amount, left_axle_pin_length, App.Vector(0,0, -half_axle - flange_thickness - left_axle_pin_length))
+    l_pin_bearing = Part.makeCylinder(pin_radius, left_axle_pin_length, App.Vector(0,0, -half_axle - flange_thickness - left_axle_pin_length))
 
     # Left Outer Cap Socket (Female Thread) - Extended to cut through flange and axle
     anchor_tip_z = -half_axle - flange_thickness - left_axle_pin_length

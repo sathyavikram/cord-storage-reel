@@ -1,0 +1,2 @@
+ review assembly file and make sure all parts are added and final render does not have any defects floating objects and easy to 3D print. do not
+  make any code changes. just give me defect report. Use visual validations using mcp tool 

@@ -23,10 +23,10 @@ pin_radius = axle_radius
 frame_width = 32 * scale     
 hub_thickness = 32 * scale   
 hub_radius = 50 * scale      
-hub_hole_radius = pin_radius + 2.0 * scale 
+hub_hole_radius = pin_radius + 2.65 * scale 
 
 crossbar_radius = 12 * scale 
-z_gap = 5 * scale            
+z_gap = 10 * scale            
 
 cap_depth = 7 * scale
 right_axle_pin_length = z_gap + hub_thickness

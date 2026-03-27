@@ -29,15 +29,15 @@ def build_left_spool():
 
     # The main hex receiver hole (from Z=31 to Z=55)
     clearance_amount = 0.4 * scale
-    l_axle_hole = make_hex_prism(peg_radius + clearance_amount, 70*scale, App.Placement(App.Vector(0,0,-37.0*scale), App.Rotation(0,0,0,1)))
+    l_axle_hole = make_hex_prism(peg_radius + clearance_amount, 58.0*scale, App.Placement(App.Vector(0,0,-24.5*scale), App.Rotation(0,0,0,1)))
 
     # --- Internal Thread Cutter for Center Bolt ---
     # Threading the inner bore from Z=5 to Z=55 (50mm length)
     t_pitch = 5.0 * scale
     t_radius = 12.0 * scale + clearance_amount  # Increased diameter
-    desired_t_start = -73.0 * scale
+    desired_t_start = -78.0 * scale
     t_start = round(desired_t_start / t_pitch) * t_pitch
-    t_length = 50.0 * scale + (desired_t_start - t_start + 10*scale)
+    t_length = 60.0 * scale + (desired_t_start - t_start + 10*scale)
     t_r_inner = 12.0 * scale - (t_pitch * 0.45) + clearance_amount
     
     t_helix = Part.makeHelix(t_pitch, t_length, t_r_inner, 0)

@@ -29,7 +29,7 @@ def build_right_spool():
         return prism
 
     clearance_amount = 0.4 * scale
-    r_axle_peg = make_hex_prism(peg_radius - clearance_amount/2, 70 * scale, App.Placement(App.Vector(0,0,-37 * scale), App.Rotation(0,0,0,1)))
+    r_axle_peg = make_hex_prism(peg_radius - clearance_amount/2, 57 * scale, App.Placement(App.Vector(0,0,-24 * scale), App.Rotation(0,0,0,1)))
     
     # --- Center Bolt Through-Bore with Female Threads ---
     # Threading from Z=30 to beyond the handle peg (150mm length)

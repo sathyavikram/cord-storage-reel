@@ -41,16 +41,16 @@ def build_right_spool():
     t_r_inner = 12.0 * scale - (t_pitch * 0.45) + clearance_amount
 
     t_helix = Part.makeHelix(t_pitch, t_length, t_r_inner, 0)
-    t_helix.Placement = App.Placement(App.Vector(0,0,t_start), App.Rotation(0,0,0,1))
     
     inner_X = t_r_inner - 2.0 * scale
-    p1 = App.Vector(inner_X, 0, -t_pitch*0.35 + t_start)
-    p2 = App.Vector(t_radius, 0, -t_pitch*0.1 + t_start)
-    p3 = App.Vector(t_radius, 0,  t_pitch*0.1 + t_start)
-    p4 = App.Vector(inner_X, 0,  t_pitch*0.35 + t_start)
+    p1 = App.Vector(inner_X, 0, -t_pitch*0.35)
+    p2 = App.Vector(t_radius, 0, -t_pitch*0.1)
+    p3 = App.Vector(t_radius, 0,  t_pitch*0.1)
+    p4 = App.Vector(inner_X, 0,  t_pitch*0.35)
     t_wire = Part.Wire(Part.makePolygon([p1, p2, p3, p4, p1]))
     
     t_sweep = Part.Wire(t_helix).makePipeShell([t_wire], True, True)
+    t_sweep.Placement = App.Placement(App.Vector(0,0,t_start), App.Rotation(0,0,0,1))
     t_core = Part.makeCylinder(t_r_inner, t_length + 20*scale, App.Vector(0,0,t_start - 10*scale))
     
     # Split cutter into core and sweep manually

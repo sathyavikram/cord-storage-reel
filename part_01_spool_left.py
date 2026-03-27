@@ -35,22 +35,22 @@ def build_left_spool():
     # Threading the inner bore from Z=5 to Z=55 (50mm length)
     t_pitch = 5.0 * scale
     t_radius = 12.0 * scale + clearance_amount  # Increased diameter
-    desired_t_start = -78.0 * scale
+    desired_t_start = -100.0 * scale
     t_start = round(desired_t_start / t_pitch) * t_pitch
-    t_length = 60.0 * scale + (desired_t_start - t_start + 10*scale)
+    t_length = 85.0 * scale + (desired_t_start - t_start + 10*scale)
     t_r_inner = 12.0 * scale - (t_pitch * 0.45) + clearance_amount
     
     t_helix = Part.makeHelix(t_pitch, t_length, t_r_inner, 0)
-    t_helix.Placement = App.Placement(App.Vector(0,0,t_start), App.Rotation(0,0,0,1))
     
     inner_X = t_r_inner - 2.0 * scale
-    p1 = App.Vector(inner_X, 0, -t_pitch*0.35 + t_start)
-    p2 = App.Vector(t_radius, 0, -t_pitch*0.1 + t_start)
-    p3 = App.Vector(t_radius, 0,  t_pitch*0.1 + t_start)
-    p4 = App.Vector(inner_X, 0,  t_pitch*0.35 + t_start)
+    p1 = App.Vector(inner_X, 0, -t_pitch*0.35)
+    p2 = App.Vector(t_radius, 0, -t_pitch*0.1)
+    p3 = App.Vector(t_radius, 0,  t_pitch*0.1)
+    p4 = App.Vector(inner_X, 0,  t_pitch*0.35)
     t_wire = Part.Wire(Part.makePolygon([p1, p2, p3, p4, p1]))
     
     t_sweep = Part.Wire(t_helix).makePipeShell([t_wire], True, True)
+    t_sweep.Placement = App.Placement(App.Vector(0,0,t_start), App.Rotation(0,0,0,1))
     t_core = Part.makeCylinder(t_r_inner, t_length + 25.0 * scale, App.Vector(0, 0, t_start - 25.0 * scale))
     
     thread_cutter = t_core.fuse(t_sweep)
@@ -77,16 +77,16 @@ def build_left_spool():
     c_r_inner = 25.0 * scale - (c_pitch * 0.45) + clearance_amount
     
     c_helix = Part.makeHelix(c_pitch, c_length, c_r_inner, 0)
-    c_helix.Placement = App.Placement(App.Vector(0,0,anchor_tip_z - 1.0), App.Rotation(0,0,0,1))
     
     inner_X = c_r_inner - 2.0 * scale
-    p1 = App.Vector(inner_X, 0, -c_pitch*0.35 + anchor_tip_z - 1.0)
-    p2 = App.Vector(c_radius, 0, -c_pitch*0.1 + anchor_tip_z - 1.0)
-    p3 = App.Vector(c_radius, 0,  c_pitch*0.1 + anchor_tip_z - 1.0)
-    p4 = App.Vector(inner_X, 0,  c_pitch*0.35 + anchor_tip_z - 1.0)
+    p1 = App.Vector(inner_X, 0, -c_pitch*0.35)
+    p2 = App.Vector(c_radius, 0, -c_pitch*0.1)
+    p3 = App.Vector(c_radius, 0,  c_pitch*0.1)
+    p4 = App.Vector(inner_X, 0,  c_pitch*0.35)
     c_wire = Part.Wire(Part.makePolygon([p1, p2, p3, p4, p1]))
     
     c_sweep = Part.Wire(c_helix).makePipeShell([c_wire], True, True)
+    c_sweep.Placement = App.Placement(App.Vector(0,0,anchor_tip_z - 1.0), App.Rotation(0,0,0,1))
     c_core = Part.makeCylinder(c_r_inner, c_length, App.Vector(0,0,anchor_tip_z - 1.0))
     
     cap_cutter = c_core.fuse(c_sweep)
@@ -107,15 +107,6 @@ def build_left_spool():
     
     # Unified thread cutter
     thread_cutter = t_core.fuse(t_sweep).removeSplitter()
-    
-    # Cap cutter
-    cap_cutter = cap_cutter.removeSplitter()
-    
-    left_spool = left_spool.cut(l_axle_hole)
-    left_spool = left_spool.cut(thread_cutter)
-    left_spool = left_spool.cut(cap_cutter)
-    
-    return left_spool.removeSplitter()
     
     # Cap cutter
     cap_cutter = cap_cutter.removeSplitter()

@@ -40,8 +40,10 @@ def build_printed_bolt():
     
     # 3. Threaded section (Fully threaded now)
     # Threads from Z = 15.0 to Z = 162.0 (Massive reduction from Z = -95 to Z = 162!)
-    t_start = -75.0 * scale 
-    # Add 2.0 * scale overlap so the threads go inside the head and fuse properly
+    t_pitch = pitch
+    desired_t_start = -100.0 * scale 
+    t_start = round(desired_t_start / t_pitch) * t_pitch
+    # Add overlap so the threads go inside the head and fuse properly
     t_length = (head_start - t_start) + 2.0 * scale
     t_r_inner = radius - (pitch * 0.45)
     

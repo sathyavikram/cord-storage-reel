@@ -30,16 +30,16 @@ def build_caps():
     t_r_inner = 25.0 * scale - (t_pitch * 0.45)  # Nominal root radius
     
     t_helix = Part.makeHelix(t_pitch, t_length, t_r_inner, 0)
-    t_helix.Placement = App.Placement(App.Vector(0,0,anchor_tip_z), App.Rotation(0,0,0,1))
     
     inner_X = t_r_inner - 2.0 * scale
-    p1 = App.Vector(inner_X, 0, -t_pitch*0.35 + anchor_tip_z)
-    p2 = App.Vector(t_radius, 0, -t_pitch*0.1 + anchor_tip_z)
-    p3 = App.Vector(t_radius, 0,  t_pitch*0.1 + anchor_tip_z)
-    p4 = App.Vector(inner_X, 0,  t_pitch*0.35 + anchor_tip_z)
+    p1 = App.Vector(inner_X, 0, -t_pitch*0.35)
+    p2 = App.Vector(t_radius, 0, -t_pitch*0.1)
+    p3 = App.Vector(t_radius, 0,  t_pitch*0.1)
+    p4 = App.Vector(inner_X, 0,  t_pitch*0.35)
     t_wire = Part.Wire(Part.makePolygon([p1, p2, p3, p4, p1]))
     
     t_sweep = Part.Wire(t_helix).makePipeShell([t_wire], True, True)
+    t_sweep.Placement = App.Placement(App.Vector(0,0,anchor_tip_z), App.Rotation(0,0,0,1))
     t_core = Part.makeCylinder(t_r_inner, t_length, App.Vector(0,0,anchor_tip_z))
     
     thread_peg = t_core.fuse(t_sweep)

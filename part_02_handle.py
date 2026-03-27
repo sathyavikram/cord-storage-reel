@@ -58,7 +58,6 @@ def build_handle():
     t_r_inner = 12.0 * scale - (t_pitch * 0.45) + h_clearance
 
     t_helix = Part.makeHelix(t_pitch, t_length, t_r_inner, 0)
-    t_helix.Placement = App.Placement(App.Vector(x_mount, y_mount, t_start), App.Rotation(0,0,0,1))
     
     inner_X = t_r_inner - 2.0 * scale
     p1 = App.Vector(inner_X, 0, -t_pitch*0.35)
@@ -68,6 +67,8 @@ def build_handle():
     t_wire = Part.Wire(Part.makePolygon([p1, p2, p3, p4, p1]))
     
     t_sweep = Part.Wire(t_helix).makePipeShell([t_wire], True, True)
+    t_sweep.Placement = App.Placement(App.Vector(x_mount, y_mount, t_start), App.Rotation(0,0,0,1))
+    
     t_core = Part.makeCylinder(t_r_inner, t_length + 2*scale, App.Vector(x_mount, y_mount, t_start - 1*scale))
     
     thread_cutter = t_core.fuse(t_sweep)

@@ -19,13 +19,14 @@ def build_handle():
     handle_anchor_len = 20 * scale
     
     socket_radius = handle_peg_radius + clearance
-    sock_outer_rad = handle_peg_radius + 10 * scale
+    sock_outer_rad = pin_radius
     
     standoff = Part.makeCylinder(sock_outer_rad, handle_standoff, App.Vector(x_mount, y_mount, right_frame_outer_z))
     socket_body = Part.makeCylinder(sock_outer_rad, crank_thickness + handle_anchor_len + 5*scale, App.Vector(x_mount, y_mount, z_crank))
     
-    arm_box = Part.makeBox(24*scale, hole_dist, crank_thickness, App.Vector(x_mount - 12*scale, y_mount, z_crank))
-    arm_rounded = Part.makeCylinder(12*scale, crank_thickness, App.Vector(x_mount, y_mount + hole_dist, z_crank))
+    arm_width = 36 * scale
+    arm_box = Part.makeBox(arm_width, hole_dist, crank_thickness, App.Vector(x_mount - arm_width/2, y_mount, z_crank))
+    arm_rounded = Part.makeCylinder(arm_width/2, crank_thickness, App.Vector(x_mount, y_mount + hole_dist, z_crank))
     
     crank_solid = standoff.fuse(socket_body).fuse(arm_box).fuse(arm_rounded)
     

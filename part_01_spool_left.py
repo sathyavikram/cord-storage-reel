@@ -35,8 +35,9 @@ def build_left_spool():
     # Threading the inner bore from Z=5 to Z=55 (50mm length)
     t_pitch = 5.0 * scale
     t_radius = 12.0 * scale + clearance_amount  # Increased diameter
-    t_start = -73.0 * scale
-    t_length = 50.0 * scale
+    desired_t_start = -73.0 * scale
+    t_start = round(desired_t_start / t_pitch) * t_pitch
+    t_length = 50.0 * scale + (desired_t_start - t_start + 10*scale)
     t_r_inner = 12.0 * scale - (t_pitch * 0.45) + clearance_amount
     
     t_helix = Part.makeHelix(t_pitch, t_length, t_r_inner, 0)

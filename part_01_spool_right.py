@@ -35,8 +35,9 @@ def build_right_spool():
     # Threading from Z=30 to beyond the handle peg (150mm length)
     t_pitch = 5.0 * scale
     t_radius = 12.0 * scale + clearance_amount  # Increased diameter
-    t_start = -39.5 * scale
-    t_length = 195.0 * scale
+    desired_t_start = -39.5 * scale
+    t_start = round(desired_t_start / t_pitch) * t_pitch
+    t_length = 195.0 * scale + (desired_t_start - t_start + 10*scale)
     t_r_inner = 12.0 * scale - (t_pitch * 0.45) + clearance_amount
 
     t_helix = Part.makeHelix(t_pitch, t_length, t_r_inner, 0)

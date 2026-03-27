@@ -52,8 +52,9 @@ def build_handle():
     
     t_pitch = 5.0 * scale
     t_radius = 12.0 * scale + h_clearance
-    t_start = right_frame_outer_z - 5.0 * scale
-    t_length = 50.0 * scale
+    desired_t_start = right_frame_outer_z - 5.0 * scale
+    t_start = round(desired_t_start / t_pitch) * t_pitch
+    t_length = 50.0 * scale + (desired_t_start - t_start + 10*scale)
     t_r_inner = 12.0 * scale - (t_pitch * 0.45) + h_clearance
 
     t_helix = Part.makeHelix(t_pitch, t_length, t_r_inner, 0)

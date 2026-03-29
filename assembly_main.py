@@ -16,6 +16,9 @@ import part_04_crossbars
 import part_05_caps
 import part_01_center_bolt
 import part_04_fasteners
+import importlib
+for mod in [part_01_spool_right, part_01_spool_left, part_02_handle, part_03_frame, part_04_crossbars, part_05_caps, part_01_center_bolt, part_04_fasteners]:
+    importlib.reload(mod)
 
 # Re-import params so we can place frames and crossbars perfectly
 from params import z_R, z_L, x_spread, y_floor, y_top

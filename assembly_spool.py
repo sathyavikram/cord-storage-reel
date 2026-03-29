@@ -10,6 +10,9 @@ if _script_dir not in sys.path:
 
 import part_01_spool_left
 import part_01_spool_right
+import importlib
+importlib.reload(part_01_spool_left)
+importlib.reload(part_01_spool_right)
 
 def create_spool_assembly():
     doc_name = "SpoolAssembly"

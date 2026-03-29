@@ -60,6 +60,7 @@ def create_spool_assembly():
         os.remove(assembly_export_path)
     
     compound_shape.exportStep(assembly_export_path)
+    compound_shape.exportStl(os.path.join(exports_dir, "assembly_spool.stl"))
     print("Assembly complete.")
 
 if __name__ == "__main__":

@@ -94,7 +94,7 @@ def generate_assembly():
 
     print(f"Exporting assembly files to {export_dir}...")
     assembly.exportStep(os.path.join(export_dir, "assembly_main.step"))
-    assembly.exportStl(os.path.join(export_dir, "00_Full_Assembly_Preview.stl"))
+    assembly.exportStl(os.path.join(export_dir, "assembly_main.stl"))
     print("Generation complete!")
 
 if __name__ == "__main__":

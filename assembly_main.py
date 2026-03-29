@@ -21,7 +21,7 @@ for mod in [part_01_spool_right, part_01_spool_left, part_02_handle, part_03_fra
     importlib.reload(mod)
 
 # Re-import params so we can place frames and crossbars perfectly
-from params import z_R, z_L, x_spread, y_floor, y_top
+from params import z_R, z_L, x_spread, y_floor, y_top, hub_thickness
 
 def get_export_dir():
     _script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -42,6 +42,12 @@ def generate_assembly():
 
     export_dir = get_export_dir()
     
+    # Pre-calculated Z values and rotations for fasteners
+    z_right_outer = z_R + hub_thickness / 2
+    z_left_outer = z_L - hub_thickness / 2
+    bolt_rot_R = App.Rotation(App.Vector(1,0,0), 180) # Face -Z
+    bolt_rot_L = App.Rotation() # Face +Z
+
     # We map logical assembly components to their standardized source step files and apply specific placements
     components = [
         {"name": "Spool Right", "file": "part_01_spool_right.step", "pos": App.Placement(), "gen": part_01_spool_right.build_right_spool},
@@ -54,7 +60,14 @@ def generate_assembly():
         {"name": "Crossbar Top", "file": "part_04_crossbars.step", "pos": App.Placement(App.Vector(0, y_top, 0), App.Rotation()), "gen": part_04_crossbars.build_crossbars_export},
         {"name": "Cap Left", "file": "part_05_caps.step", "pos": App.Placement(), "gen": part_05_caps.build_caps},
         {"name": "Center Bolt", "file": "part_01_center_bolt.step", "pos": App.Placement(), "gen": part_01_center_bolt.build_printed_bolt},
-        {"name": "Frame Bolt", "file": "part_04_fasteners.step", "pos": App.Placement(), "gen": part_04_fasteners.build_fastener}
+        # Right Fasteners
+        {"name": "Frame Bolt R1", "file": "part_04_fasteners.step", "pos": App.Placement(App.Vector(x_spread, y_floor, z_right_outer), bolt_rot_R), "gen": part_04_fasteners.build_fastener},
+        {"name": "Frame Bolt R2", "file": "part_04_fasteners.step", "pos": App.Placement(App.Vector(-x_spread, y_floor, z_right_outer), bolt_rot_R), "gen": part_04_fasteners.build_fastener},
+        {"name": "Frame Bolt R3", "file": "part_04_fasteners.step", "pos": App.Placement(App.Vector(0, y_top, z_right_outer), bolt_rot_R), "gen": part_04_fasteners.build_fastener},
+        # Left Fasteners
+        {"name": "Frame Bolt L1", "file": "part_04_fasteners.step", "pos": App.Placement(App.Vector(x_spread, y_floor, z_left_outer), bolt_rot_L), "gen": part_04_fasteners.build_fastener},
+        {"name": "Frame Bolt L2", "file": "part_04_fasteners.step", "pos": App.Placement(App.Vector(-x_spread, y_floor, z_left_outer), bolt_rot_L), "gen": part_04_fasteners.build_fastener},
+        {"name": "Frame Bolt L3", "file": "part_04_fasteners.step", "pos": App.Placement(App.Vector(0, y_top, z_left_outer), bolt_rot_L), "gen": part_04_fasteners.build_fastener}
     ]
 
     assembly_parts = []

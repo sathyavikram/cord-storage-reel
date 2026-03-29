@@ -3,8 +3,11 @@ try:
     _script_dir = os.path.dirname(os.path.abspath(__file__))
 except NameError:
     _script_dir = os.getcwd()
+_helpers_dir = os.path.join(os.path.dirname(_script_dir), 'helpers')
 if _script_dir not in sys.path:
     sys.path.insert(0, _script_dir)
+if _helpers_dir not in sys.path:
+    sys.path.insert(0, _helpers_dir)
 import FreeCAD as App
 import Part
 import math
@@ -60,6 +63,18 @@ def build_fastener():
     thread_part = thread_part.cut(cutter.cut(chamfer))
 
     bolt = head.fuse(smooth).fuse(thread_part).removeSplitter()
+    
+    export_dir = EXPORT_DIR
+    os.makedirs(export_dir, exist_ok=True)
+    stl_file = os.path.join(export_dir, 'part_04_fasteners.stl')
+    step_file = os.path.join(export_dir, 'part_04_fasteners.step')
+    for f_path in [stl_file, step_file]:
+        if os.path.exists(f_path):
+            os.remove(f_path)
+    print(f'Exporting part_04_fasteners...')
+    bolt.exportStl(stl_file)
+    bolt.exportStep(step_file)
+    
     return bolt
 
 if __name__ == '__main__':
@@ -74,11 +89,5 @@ if __name__ == '__main__':
     else:
         doc = App.newDocument(doc_name)
 
-    export_dir = EXPORT_DIR
-    os.makedirs(export_dir, exist_ok=True)
-
     bolt = build_fastener()
     Part.show(bolt, 'FrameBolt')
-    print(f'Exporting 04_Frame_Bolt...')
-    bolt.exportStl(os.path.join(export_dir, '04_Frame_Bolt.stl'))
-    bolt.exportStep(os.path.join(export_dir, '04_Frame_Bolt.step'))

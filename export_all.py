@@ -2,6 +2,7 @@ import os
 import glob
 import subprocess
 import sys
+import shutil
 
 def run_part_scripts():
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -24,16 +25,36 @@ def run_part_scripts():
         print(f"Error: Could not find FreeCAD at {freecad_cmd}")
         print("Please ensure FreeCAD is installed.")
         return
+        
+    # Clear the exports directory before generating new files
+    exports_dir = os.path.join(script_dir, "exports")
+    if os.path.exists(exports_dir):
+        print("Clearing existing files in exports/ directory...")
+        for item in os.listdir(exports_dir):
+            item_path = os.path.join(exports_dir, item)
+            try:
+                if os.path.isfile(item_path) or os.path.islink(item_path):
+                    os.unlink(item_path)
+                elif os.path.isdir(item_path):
+                    shutil.rmtree(item_path)
+            except Exception as e:
+                print(f"Failed to delete {item_path}. Reason: {e}")
+    else:
+        os.makedirs(exports_dir)
     
     for part_file in part_files:
         filename = os.path.basename(part_file)
         print(f"Running {filename}... (this may take a minute or two)")
         
+        # We use runpy to ensure __name__ == '__main__' is respected by FreeCAD
+        script_cmd = f"import runpy; runpy.run_path('{part_file}', run_name='__main__')"
+        
         # We stream output using subprocess.Popen to see progress in real-time
         process = subprocess.Popen(
-            [freecad_cmd, part_file],
+            [freecad_cmd, "-c", script_cmd],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
+            stdin=subprocess.DEVNULL,
             text=True
         )
         

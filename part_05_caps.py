@@ -3,8 +3,11 @@ try:
     _script_dir = os.path.dirname(os.path.abspath(__file__))
 except NameError:
     _script_dir = os.getcwd()
+_helpers_dir = os.path.join(os.path.dirname(_script_dir), 'helpers')
 if _script_dir not in sys.path:
     sys.path.insert(0, _script_dir)
+if _helpers_dir not in sys.path:
+    sys.path.insert(0, _helpers_dir)
 import FreeCAD as App
 import Part
 import sys
@@ -58,6 +61,17 @@ def build_caps():
                         App.Vector(-slot_length/2, -slot_width/2, anchor_tip_z - cap_h - 0.1))
     cap_L = cap_L.cut(slot)
 
+    export_dir = EXPORT_DIR
+    os.makedirs(export_dir, exist_ok=True)
+    stl_file = os.path.join(export_dir, 'part_05_caps.stl')
+    step_file = os.path.join(export_dir, 'part_05_caps.step')
+    for f_path in [stl_file, step_file]:
+        if os.path.exists(f_path):
+            os.remove(f_path)
+    print(f'Exporting part_05_caps...')
+    cap_L.exportStl(stl_file)
+    cap_L.exportStep(step_file)
+
     return None, cap_L
 
 if __name__ == '__main__':
@@ -76,15 +90,9 @@ if __name__ == '__main__':
     else:
         doc = App.newDocument(doc_name)
 
-    export_dir = EXPORT_DIR
-    os.makedirs(export_dir, exist_ok=True)
-
     parts = build_caps()
     if parts[0] is not None:
         pass
         
     if parts[1] is not None:
         Part.show(parts[1], 'CapLeft')
-        print(f'Exporting 05_Cap_L...')
-        parts[1].exportStl(os.path.join(export_dir, '05_Cap_L.stl'))
-        parts[1].exportStep(os.path.join(export_dir, '05_Cap_L.step'))

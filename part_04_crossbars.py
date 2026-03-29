@@ -3,20 +3,21 @@ try:
     _script_dir = os.path.dirname(os.path.abspath(__file__))
 except NameError:
     _script_dir = os.getcwd()
+_helpers_dir = os.path.join(os.path.dirname(_script_dir), 'helpers')
 if _script_dir not in sys.path:
     sys.path.insert(0, _script_dir)
+if _helpers_dir not in sys.path:
+    sys.path.insert(0, _helpers_dir)
 import FreeCAD as App
 import Part
 import sys
 if "params" in sys.modules: del sys.modules["params"]
 from params import *
 
-def build_crossbars():
+def build_crossbars_export():
     nest_depth = 8.0 * scale
-    
     inner_L = z_L + hub_thickness/2
     inner_R = z_R - hub_thickness/2
-    
     start_z = inner_L - nest_depth
     end_z = inner_R + nest_depth
     bar_len = end_z - start_z
@@ -44,22 +45,26 @@ def build_crossbars():
     tip_bore = Part.makeCylinder(t_r_inner, 5.0 * scale, App.Vector(0,0,t_length-5.0*scale))
     thread_cutter = thread_cutter.fuse(tip_bore)
 
-    def make_crossbar(pos_x, pos_y):
-        bar = Part.makeCylinder(crossbar_radius, bar_len, App.Vector(pos_x, pos_y, start_z))
-        
-        cutL = thread_cutter.copy()
-        cutL.Placement = App.Placement(App.Vector(pos_x, pos_y, start_z - 1.0), App.Rotation(0,0,0,1))
-        
-        cutR = thread_cutter.copy()
-        cutR.Placement = App.Placement(App.Vector(pos_x, pos_y, end_z + 1.0), App.Rotation(App.Vector(1,0,0), 180))
-        
-        return bar.cut(cutL).cut(cutR).removeSplitter()
-
-    bar1 = make_crossbar(x_spread, y_floor)
-    bar2 = make_crossbar(-x_spread, y_floor)
-    bar3 = make_crossbar(0, y_top)
+    bar = Part.makeCylinder(crossbar_radius, bar_len, App.Vector(0, 0, start_z))
+    cutL = thread_cutter.copy()
+    cutL.Placement = App.Placement(App.Vector(0, 0, start_z - 1.0), App.Rotation(0,0,0,1))
+    cutR = thread_cutter.copy()
+    cutR.Placement = App.Placement(App.Vector(0, 0, end_z + 1.0), App.Rotation(App.Vector(1,0,0), 180))
+    bar = bar.cut(cutL).cut(cutR).removeSplitter()
     
-    return bar1, bar2, bar3
+    export_dir = EXPORT_DIR
+    os.makedirs(export_dir, exist_ok=True)
+    
+    stl_file = os.path.join(export_dir, 'part_04_crossbars.stl')
+    step_file = os.path.join(export_dir, 'part_04_crossbars.step')
+    for f_path in [stl_file, step_file]:
+        if os.path.exists(f_path):
+            os.remove(f_path)
+    print(f'Exporting part_04_crossbars...')
+    bar.exportStl(stl_file)
+    bar.exportStep(step_file)
+    
+    return bar
 
 if __name__ == '__main__':
     import FreeCAD as App
@@ -77,19 +82,5 @@ if __name__ == '__main__':
     else:
         doc = App.newDocument(doc_name)
 
-    export_dir = EXPORT_DIR
-    os.makedirs(export_dir, exist_ok=True)
-
-    parts = build_crossbars()
-    Part.show(parts[0], 'CrossbarFront')
-    print(f'Exporting 04_Crossbar_Front...')
-    parts[0].exportStl(os.path.join(export_dir, '04_Crossbar_Front.stl'))
-    parts[0].exportStep(os.path.join(export_dir, '04_Crossbar_Front.step'))
-    Part.show(parts[1], 'CrossbarBack')
-    print(f'Exporting 04_Crossbar_Back...')
-    parts[1].exportStl(os.path.join(export_dir, '04_Crossbar_Back.stl'))
-    parts[1].exportStep(os.path.join(export_dir, '04_Crossbar_Back.step'))
-    Part.show(parts[2], 'CrossbarTop')
-    print(f'Exporting 04_Crossbar_Top...')
-    parts[2].exportStl(os.path.join(export_dir, '04_Crossbar_Top.stl'))
-    parts[2].exportStep(os.path.join(export_dir, '04_Crossbar_Top.step'))
+    part = build_crossbars_export()
+    Part.show(part, 'Crossbar')

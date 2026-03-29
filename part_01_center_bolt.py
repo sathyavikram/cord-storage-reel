@@ -8,8 +8,11 @@ try:
     _script_dir = os.path.dirname(os.path.abspath(__file__))
 except NameError:
     _script_dir = os.getcwd()
+_helpers_dir = os.path.join(os.path.dirname(_script_dir), 'helpers')
 if _script_dir not in sys.path:
     sys.path.insert(0, _script_dir)
+if _helpers_dir not in sys.path:
+    sys.path.insert(0, _helpers_dir)
 
 if "params" in sys.modules: del sys.modules["params"]
 from params import *
@@ -41,7 +44,7 @@ def build_printed_bolt():
     # 3. Threaded section (Fully threaded now)
     # Threads from Z = 15.0 to Z = 162.0 (Massive reduction from Z = -95 to Z = 162!)
     t_pitch = pitch
-    desired_t_start = -100.0 * scale 
+    desired_t_start = 15.0 * scale 
     t_start = round(desired_t_start / t_pitch) * t_pitch
     # Add overlap so the threads go inside the head and fuse properly
     t_length = (head_start - t_start) + 2.0 * scale
@@ -66,9 +69,21 @@ def build_printed_bolt():
     # Avoid OpenCASCADE boolean hangs by using makeCompound for the final 3D printing export
     # The overlapping shapes (head, core, and thread sweep) slice perfectly in Bambu/PrusaSlicer
     bolt = Part.makeCompound([head, core, sweep])
+
+    export_dir = EXPORT_DIR
+    os.makedirs(export_dir, exist_ok=True)
+    stl_file = os.path.join(export_dir, 'part_01_center_bolt.stl')
+    step_file = os.path.join(export_dir, 'part_01_center_bolt.step')
+    for f_path in [stl_file, step_file]:
+        if os.path.exists(f_path):
+            os.remove(f_path)
+    print(f'Exporting part_01_center_bolt...')
+    bolt.exportStl(stl_file)
+    bolt.exportStep(step_file)
+
     return bolt
 
-if True:
+if __name__ == '__main__':
     doc_name = "Doc_01_Center_Bolt"
     try:
         doc = App.getDocument(doc_name)
@@ -80,11 +95,5 @@ if True:
     else:
         doc = App.newDocument(doc_name)
 
-    export_dir = EXPORT_DIR
-    os.makedirs(export_dir, exist_ok=True)
-
     p_01_Bolt = build_printed_bolt()
     Part.show(p_01_Bolt, 'CenterBolt')
-    print(f'Exporting 01_Center_Bolt...')
-    p_01_Bolt.exportStl(os.path.join(export_dir, '01_Center_Bolt.stl'))
-    p_01_Bolt.exportStep(os.path.join(export_dir, '01_Center_Bolt.step'))

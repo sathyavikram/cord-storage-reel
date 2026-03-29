@@ -3,8 +3,11 @@ try:
     _script_dir = os.path.dirname(os.path.abspath(__file__))
 except NameError:
     _script_dir = os.getcwd()
+_helpers_dir = os.path.join(os.path.dirname(_script_dir), 'helpers')
 if _script_dir not in sys.path:
     sys.path.insert(0, _script_dir)
+if _helpers_dir not in sys.path:
+    sys.path.insert(0, _helpers_dir)
 import FreeCAD as App
 import Part
 import math
@@ -90,38 +93,33 @@ def build_frame(z_plane, is_left):
     
     return frame.cut(hole).cut(sock1).cut(sock2).cut(sock3).removeSplitter()
 
-def build_right_frame():
-    return build_frame(z_R, False)
-
-def build_left_frame():
-    return build_frame(z_L, True)
-
-if __name__ == '__main__':
-    import FreeCAD as App
-    import Part
+def build_frame_export():
+    frame = build_frame(0, False)
+    export_dir = EXPORT_DIR
     import os
+    os.makedirs(export_dir, exist_ok=True)
+    stl_file = os.path.join(export_dir, "part_03_frame.stl")
+    step_file = os.path.join(export_dir, "part_03_frame.step")
+    for f_path in [stl_file, step_file]:
+        if os.path.exists(f_path):
+            os.remove(f_path)
+    print("Exporting part_03_frame...")
+    frame.exportStl(stl_file)
+    frame.exportStep(step_file)
+    return frame
 
+if __name__ == "__main__":
+    import FreeCAD as App
+    import Part, os
     doc_name = "Doc_" + os.path.basename(__file__).replace(".py", "")
     try:
         doc = App.getDocument(doc_name)
-    except Exception:
+    except:
         doc = None
     if doc is not None:
         for obj in doc.Objects:
             doc.removeObject(obj.Name)
     else:
         doc = App.newDocument(doc_name)
-
-    export_dir = EXPORT_DIR
-    os.makedirs(export_dir, exist_ok=True)
-
-    p_03_Frame_Right = build_right_frame()
-    Part.show(p_03_Frame_Right, 'RightFrame')
-    print(f'Exporting 03_Frame_Right...')
-    p_03_Frame_Right.exportStl(os.path.join(export_dir, '03_Frame_Right.stl'))
-    p_03_Frame_Right.exportStep(os.path.join(export_dir, '03_Frame_Right.step'))
-    p_03_Frame_Left = build_left_frame()
-    Part.show(p_03_Frame_Left, 'LeftFrame')
-    print(f'Exporting 03_Frame_Left...')
-    p_03_Frame_Left.exportStl(os.path.join(export_dir, '03_Frame_Left.stl'))
-    p_03_Frame_Left.exportStep(os.path.join(export_dir, '03_Frame_Left.step'))
+    p_03_Frame = build_frame_export()
+    Part.show(p_03_Frame, "Frame")

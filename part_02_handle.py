@@ -3,8 +3,11 @@ try:
     _script_dir = os.path.dirname(os.path.abspath(__file__))
 except NameError:
     _script_dir = os.getcwd()
+_helpers_dir = os.path.join(os.path.dirname(_script_dir), 'helpers')
 if _script_dir not in sys.path:
     sys.path.insert(0, _script_dir)
+if _helpers_dir not in sys.path:
+    sys.path.insert(0, _helpers_dir)
 import FreeCAD as App
 import Part
 import sys
@@ -84,6 +87,18 @@ def build_handle():
     handle = crank_arm.fuse(h_shield).fuse(h_grip).removeSplitter()
     
     handle.rotate(App.Vector(x_mount, y_mount, 0), App.Vector(0,0,1), 0)
+    
+    export_dir = EXPORT_DIR
+    os.makedirs(export_dir, exist_ok=True)
+    stl_file = os.path.join(export_dir, 'part_02_handle.stl')
+    step_file = os.path.join(export_dir, 'part_02_handle.step')
+    for f_path in [stl_file, step_file]:
+        if os.path.exists(f_path):
+            os.remove(f_path)
+    print(f'Exporting part_02_handle...')
+    handle.exportStl(stl_file)
+    handle.exportStep(step_file)
+    
     return handle
 
 if __name__ == '__main__':
@@ -98,11 +113,5 @@ if __name__ == '__main__':
     else:
         doc = App.newDocument(doc_name)
 
-    export_dir = EXPORT_DIR
-    os.makedirs(export_dir, exist_ok=True)
-
     p_02_Handle = build_handle()
     Part.show(p_02_Handle, 'Handle')
-    print(f'Exporting 02_Handle...')
-    p_02_Handle.exportStl(os.path.join(export_dir, '02_Handle.stl'))
-    p_02_Handle.exportStep(os.path.join(export_dir, '02_Handle.step'))

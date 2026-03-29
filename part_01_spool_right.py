@@ -3,8 +3,11 @@ try:
     _script_dir = os.path.dirname(os.path.abspath(__file__))
 except NameError:
     _script_dir = os.getcwd()
+_helpers_dir = os.path.join(os.path.dirname(_script_dir), 'helpers')
 if _script_dir not in sys.path:
     sys.path.insert(0, _script_dir)
+if _helpers_dir not in sys.path:
+    sys.path.insert(0, _helpers_dir)
 import FreeCAD as App
 import Part
 import math
@@ -76,7 +79,20 @@ def build_right_spool():
     thread_cutter = t_core.fuse(t_sweep).removeSplitter()
     right_spool = right_spool.cut(thread_cutter)
     
-    return right_spool.removeSplitter()
+    part = right_spool.removeSplitter()
+    
+    export_dir = EXPORT_DIR
+    os.makedirs(export_dir, exist_ok=True)
+    stl_file = os.path.join(export_dir, 'part_01_spool_right.stl')
+    step_file = os.path.join(export_dir, 'part_01_spool_right.step')
+    for f_path in [stl_file, step_file]:
+        if os.path.exists(f_path):
+            os.remove(f_path)
+    print(f'Exporting part_01_spool_right...')
+    part.exportStl(stl_file)
+    part.exportStep(step_file)
+    
+    return part
 
 if __name__ == '__main__':
     doc_name = "Doc_" + os.path.basename(__file__).replace(".py", "")
@@ -90,11 +106,5 @@ if __name__ == '__main__':
     else:
         doc = App.newDocument(doc_name)
 
-    export_dir = EXPORT_DIR
-    os.makedirs(export_dir, exist_ok=True)
-
     p_01_Spool_Right = build_right_spool()
     Part.show(p_01_Spool_Right, 'RightSpool')
-    print(f'Exporting 01_Spool_Right...')
-    p_01_Spool_Right.exportStl(os.path.join(export_dir, '01_Spool_Right.stl'))
-    p_01_Spool_Right.exportStep(os.path.join(export_dir, '01_Spool_Right.step'))

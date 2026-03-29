@@ -93,7 +93,7 @@ def generate_assembly():
     obj.Shape = assembly
 
     print(f"Exporting assembly files to {export_dir}...")
-    assembly.exportStep(os.path.join(export_dir, "00_Full_Assembly_Preview.step"))
+    assembly.exportStep(os.path.join(export_dir, "assembly_main.step"))
     assembly.exportStl(os.path.join(export_dir, "00_Full_Assembly_Preview.stl"))
     print("Generation complete!")
 

@@ -55,7 +55,7 @@ def create_spool_assembly():
     
     doc.recompute()
     
-    assembly_export_path = os.path.join(exports_dir, "00_Spool_Assembly_Preview.step")
+    assembly_export_path = os.path.join(exports_dir, "assembly_spool.step")
     if os.path.exists(assembly_export_path):
         os.remove(assembly_export_path)
     

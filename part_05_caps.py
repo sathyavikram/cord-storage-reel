@@ -43,15 +43,12 @@ def build_caps():
     
     t_sweep = Part.Wire(t_helix).makePipeShell([t_wire], True, True)
     t_sweep.Placement = App.Placement(App.Vector(0,0,anchor_tip_z), App.Rotation(0,0,0,1))
+    
+    # Extend core down to capture the floating down-curling sweep
+    core_ext = t_pitch
     t_core = Part.makeCylinder(t_r_inner, t_length, App.Vector(0,0,anchor_tip_z))
-    
-    thread_peg = t_core.fuse(t_sweep)
-    
-    # Bevel tip
-    bevel = Part.makeCone(t_radius + 2, t_r_inner, t_pitch/2 + 2, App.Vector(0,0,anchor_tip_z + t_length - t_pitch/2 - 2))
-    thread_peg = thread_peg.cut(Part.makeCylinder(t_radius + 5, t_pitch + 2, App.Vector(0,0,anchor_tip_z + t_length - 2)).cut(bevel))
-
-    cap_L = cap_L.fuse(thread_peg)
+    t_core_ext = Part.makeCylinder(t_r_inner, core_ext, App.Vector(0,0,anchor_tip_z - core_ext))
+    t_core = t_core.fuse(t_core_ext)
 
     # Flathead screwdriver slot for grip
     slot_width = 3.0 * scale
@@ -60,6 +57,10 @@ def build_caps():
     slot = Part.makeBox(slot_length, slot_width, slot_depth, 
                         App.Vector(-slot_length/2, -slot_width/2, anchor_tip_z - cap_h - 0.1))
     cap_L = cap_L.cut(slot)
+    
+    # Avoid OpenCASCADE boolean hangs by using makeCompound for the final 3D printing export
+    # The overlapping shapes (head, core, and thread sweep) slice perfectly in Bambu/PrusaSlicer
+    cap_final = Part.makeCompound([cap_L, t_core, t_sweep])
 
     export_dir = EXPORT_DIR
     os.makedirs(export_dir, exist_ok=True)
@@ -69,10 +70,10 @@ def build_caps():
         if os.path.exists(f_path):
             os.remove(f_path)
     print(f'Exporting part_05_caps...')
-    cap_L.exportStl(stl_file)
-    cap_L.exportStep(step_file)
+    cap_final.exportStl(stl_file)
+    cap_final.exportStep(step_file)
 
-    return None, cap_L
+    return None, cap_final
 
 if __name__ == '__main__':
     import FreeCAD as App

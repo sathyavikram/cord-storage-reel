@@ -71,6 +71,7 @@ def generate_assembly():
     ]
 
     assembly_parts = []
+    assembly_objs = []
     
     print("Importing components for assembly preview...")
     for comp in components:
@@ -95,6 +96,13 @@ def generate_assembly():
             assembly_parts.append(shape)
             
             doc.removeObject(inserted_obj.Name)
+            
+            # Create a named feature for the STEP tree
+            part_name = comp["name"].replace(" ", "_").replace("-", "_")
+            feat = doc.addObject("Part::Feature", part_name)
+            feat.Label = comp["name"]  # This label determines what Fusion 360 shows
+            feat.Shape = shape
+            assembly_objs.append(feat)
         else:
             print(f"Warning: Failed to load: {filepath}")
 
@@ -105,12 +113,18 @@ def generate_assembly():
     print("Constructing Assembly...")
     assembly = Part.makeCompound(assembly_parts)
 
-    obj = doc.addObject("Part::Feature", "Reel_Assembly")
-    obj.Shape = assembly
-
     print(f"Exporting assembly files to {export_dir}...")
-    assembly.exportStep(os.path.join(export_dir, "assembly_main.step"))
-    assembly.exportStl(os.path.join(export_dir, "assembly_main.stl"))
+    # Export the individual objects as a multi-body STEP file so they load as separate parts in Fusion360/FreeCAD
+    step_file_path = os.path.join(export_dir, "assembly_main.step")
+    if os.path.exists(step_file_path):
+        os.remove(step_file_path)
+    Import.export(assembly_objs, step_file_path)
+    
+    # Export the combined compound as a single STL
+    stl_file_path = os.path.join(export_dir, "assembly_main.stl")
+    if os.path.exists(stl_file_path):
+        os.remove(stl_file_path)
+    assembly.exportStl(stl_file_path)
     print("Generation complete!")
 
 if __name__ == "__main__":

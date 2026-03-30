@@ -4,18 +4,21 @@ import Part
 import os
 import sys
 
-_script_dir = os.path.dirname(os.path.abspath(__file__))
+try:
+    _script_dir = os.path.dirname(os.path.abspath(__file__))
+except NameError:
+    _script_dir = os.getcwd()
+    
 if _script_dir not in sys.path:
     sys.path.insert(0, _script_dir)
 
 import importlib
 
 # Re-import params so we can place frames and crossbars perfectly
-from params import z_R, z_L, x_spread, y_floor, y_top, hub_thickness
+from params import z_R, z_L, x_spread, y_floor, y_top, hub_thickness, EXPORT_DIR
 
 def get_export_dir():
-    _script_dir = os.path.dirname(os.path.abspath(__file__))
-    return os.path.join(_script_dir, "exports")
+    return EXPORT_DIR
 
 def generate_assembly():
     doc_name = "ReelAssembly"
@@ -91,6 +94,11 @@ def generate_assembly():
             feat = doc.addObject("Part::Feature", part_name)
             feat.Label = comp["name"]  # This label determines what Fusion 360 shows
             feat.Shape = shape
+            
+            # Make sure it's visible if loaded in FreeCAD's GUI
+            if App.GuiUp and hasattr(feat, "ViewObject") and feat.ViewObject:
+                feat.ViewObject.Visibility = True
+                
             assembly_objs.append(feat)
         else:
             print(f"Warning: Failed to load: {filepath}")
@@ -120,6 +128,11 @@ def generate_assembly():
         os.remove(stl_file_path)
     assembly.exportStl(stl_file_path)
     print("Generation complete!")
+    
+    # Fit the view if in GUI
+    if App.GuiUp:
+        import FreeCADGui as Gui
+        Gui.SendMsgToActiveView("ViewFit")
 
-if __name__ == "__main__":
+if __name__ in ["__main__", "assembly_main"]:
     generate_assembly()

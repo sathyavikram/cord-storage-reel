@@ -15,7 +15,7 @@ if "params" in sys.modules: del sys.modules["params"]
 from params import *
 
 def build_crossbars_export():
-    nest_depth = 8.0 * scale
+    nest_depth = 5.0 * scale
     inner_L = z_L + hub_thickness/2
     inner_R = z_R - hub_thickness/2
     start_z = inner_L - nest_depth

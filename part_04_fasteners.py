@@ -19,8 +19,8 @@ def build_fastener():
     t_pitch = 4.0 * scale
     t_radius = 8.0 * scale
     thread_length = 25.0 * scale
-    smooth_length = 13.0 * scale
-    head_height = 9.5 * scale  # Counterbore is 10.0
+    smooth_length = 5.0 * scale
+    head_height = 6.0 * scale  # Counterbore is 6.5
     head_radius = 13.5 * scale # Counterbore is 14.0
     
     t_r_inner = 8.0 * scale - (t_pitch * 0.45)
@@ -31,7 +31,7 @@ def build_fastener():
     # Flathead screwdriver slot
     slot_width = 3.0 * scale
     slot_length = head_radius * 2 + 1.0
-    slot_depth = 4.0 * scale
+    slot_depth = 3.0 * scale
     slot = Part.makeBox(slot_length, slot_width, slot_depth, App.Vector(-slot_length/2, -slot_width/2, -0.1))
     head = head.cut(slot)
     

@@ -87,15 +87,12 @@ def generate_assembly():
         
         if os.path.exists(filepath):
             print(f"Importing {comp['name']} from {comp['file']}...")
-            Import.insert(filepath, doc.Name)
-            inserted_obj = doc.Objects[-1]
-            shape = inserted_obj.Shape.copy()
+            shape = Part.Shape()
+            shape.read(filepath)
             
             # Apply transformation
             shape.Placement = comp["pos"].multiply(shape.Placement)
             assembly_parts.append(shape)
-            
-            doc.removeObject(inserted_obj.Name)
             
             # Create a named feature for the STEP tree
             part_name = comp["name"].replace(" ", "_").replace("-", "_")
@@ -114,7 +111,12 @@ def generate_assembly():
     assembly = Part.makeCompound(assembly_parts)
 
     print(f"Exporting assembly files to {export_dir}...")
-    # Export the individual objects as a multi-body STEP file so they load as separate parts in Fusion360/FreeCAD
+    
+    # FreeCAD requires objects to be part of the active document and recomputed before STEP export
+    # Unlinked shapes or uncomputed features usually export as 0 bytes or throw warnings.
+    doc.recompute()
+    
+    # Export the individual objects as a multi-body STEP file
     step_file_path = os.path.join(export_dir, "assembly_main.step")
     if os.path.exists(step_file_path):
         os.remove(step_file_path)

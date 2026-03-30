@@ -42,11 +42,11 @@ def build_frame(z_plane, is_left):
     hole = Part.makeCylinder(hub_hole_radius, hub_thickness + 10, P_hub - App.Vector(0,0,hub_thickness/2 + 5))
     
     # Fastener through-hole parameters
-    nest_depth = 8.0 * scale
+    nest_depth = 5.0 * scale
     clearance = 0.4 * scale
     
     cb_radius = 14.5 * scale
-    cb_depth = 10.5 * scale
+    cb_depth = 6.5 * scale
     shaft_radius = 8.5 * scale
     
     # Generic through hole going from outer face to inner face

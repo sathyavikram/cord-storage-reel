@@ -117,13 +117,13 @@ def generate_assembly():
     doc.recompute()
     
     # Export the individual objects as a multi-body STEP file
-    step_file_path = os.path.join(export_dir, "assembly_main.step")
+    step_file_path = os.path.join(export_dir, "assembly.step")
     if os.path.exists(step_file_path):
         os.remove(step_file_path)
     Import.export(assembly_objs, step_file_path)
     
     # Export the combined compound as a single STL
-    stl_file_path = os.path.join(export_dir, "assembly_main.stl")
+    stl_file_path = os.path.join(export_dir, "assembly.stl")
     if os.path.exists(stl_file_path):
         os.remove(stl_file_path)
     assembly.exportStl(stl_file_path)
@@ -134,5 +134,5 @@ def generate_assembly():
         import FreeCADGui as Gui
         Gui.SendMsgToActiveView("ViewFit")
 
-if __name__ in ["__main__", "assembly_main"]:
+if __name__ in ["__main__", "assembly"]:
     generate_assembly()

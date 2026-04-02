@@ -19,7 +19,12 @@ from params import *
 
 def build_printed_bolt():
     pitch = 5.0 * scale
-    radius = 12.0 * scale
+    
+    # Shrink the entire bolt radius to add extra clearance for easy rotation.
+    # The spools already expand the hole by `clearance` from params, 
+    # but due to FDM thread expansion we shrink the bolt here.
+    extra_clearance = 0.4 * scale
+    radius = (12.0 * scale) - extra_clearance
     
     # Bolt connects Handle -> Right Spool -> Left Spool
     # Full Threading!

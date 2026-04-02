@@ -28,9 +28,13 @@ def build_caps():
     
     # Male Threaded Peg - Nominal dimensions, clearance handled in female socket
     t_pitch = 5.0 * scale
-    t_radius = 25.0 * scale  # Nominal radius
+    
+    # Shrink the entire cap thread radius to add extra clearance for easy rotation.
+    extra_clearance = 0.4 * scale
+    t_radius = (25.0 * scale) - extra_clearance  # Nominal radius
+    
     t_length = 24.0 * scale
-    t_r_inner = 25.0 * scale - (t_pitch * 0.45)  # Nominal root radius
+    t_r_inner = t_radius - (t_pitch * 0.45)  # Nominal root radius
     
     t_helix = Part.makeHelix(t_pitch, t_length, t_r_inner, 0)
     

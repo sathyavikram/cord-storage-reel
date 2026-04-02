@@ -23,12 +23,12 @@ def build_printed_bolt():
     # Shrink the entire bolt radius to add extra clearance for easy rotation.
     # The spools already expand the hole by `clearance` from params, 
     # but due to FDM thread expansion we shrink the bolt here.
-    extra_clearance = 0.4 * scale
+    extra_clearance = 0.6 * scale
     radius = (12.0 * scale) - extra_clearance
     
     # Bolt connects Handle -> Right Spool -> Left Spool
     # Full Threading!
-    head_start = 162.0 * scale
+    head_start = (right_frame_outer_z + handle_standoff + 10 * scale + 20 * scale + 5 * scale) - 11.0 * scale
     head_radius = 13.0 * scale
     head_thickness = 10.0 * scale
     head = Part.makeCylinder(head_radius, head_thickness, App.Vector(0,0,head_start))
@@ -47,9 +47,9 @@ def build_printed_bolt():
     head = head.cut(hex_cut).cut(slot)
     
     # 3. Threaded section (Fully threaded now)
-    # Threads from Z = 15.0 to Z = 162.0 (Massive reduction from Z = -95 to Z = 162!)
+    # Threads start at Z = -75.0 to ensure a very safe gap from the left cap peg (ends at -94.0)
     t_pitch = pitch
-    desired_t_start = 15.0 * scale 
+    desired_t_start = -75.0 * scale 
     t_start = round(desired_t_start / t_pitch) * t_pitch
     # Add overlap so the threads go inside the head and fuse properly
     t_length = (head_start - t_start) + 2.0 * scale

@@ -15,7 +15,7 @@ if _script_dir not in sys.path:
 import importlib
 
 # Re-import params so we can place frames and crossbars perfectly
-from params import z_R, z_L, x_spread, y_floor, y_top, hub_thickness, EXPORT_DIR
+from params import z_R, z_L, x_spread, y_floor, y_top, hub_thickness, EXPORT_DIR, z_gap, scale, half_axle, flange_thickness, handle_standoff, frame_handle_mount_x, frame_handle_mount_y
 
 def get_export_dir():
     return EXPORT_DIR
@@ -40,6 +40,14 @@ def generate_assembly():
     z_left_outer = z_L - hub_thickness / 2
     bolt_rot_R = App.Rotation(App.Vector(1,0,0), 180) # Face -Z
     bolt_rot_L = App.Rotation() # Face +Z
+    
+    # Calculate universal cap anchor positions
+    left_axle_pin_length = z_gap + hub_thickness + (5.0 * scale)
+    z_cap_left = -half_axle - flange_thickness - left_axle_pin_length
+    
+    handle_anchor_len = 20 * scale
+    crank_thickness = 10 * scale
+    handle_top_z = (z_R + hub_thickness / 2.0) + handle_standoff + crank_thickness + handle_anchor_len + 5*scale
 
     # We map logical assembly components to their standardized source step files and apply specific placements
     components = [
@@ -51,8 +59,8 @@ def generate_assembly():
         {"name": "Crossbar Front", "file": "part_04_crossbars.step", "pos": App.Placement(App.Vector(x_spread, y_floor, 0), App.Rotation()), "mod": "part_04_crossbars", "func": "build_crossbars_export"},
         {"name": "Crossbar Back", "file": "part_04_crossbars.step", "pos": App.Placement(App.Vector(-x_spread, y_floor, 0), App.Rotation()), "mod": "part_04_crossbars", "func": "build_crossbars_export"},
         {"name": "Crossbar Top", "file": "part_04_crossbars.step", "pos": App.Placement(App.Vector(0, y_top, 0), App.Rotation()), "mod": "part_04_crossbars", "func": "build_crossbars_export"},
-        {"name": "Cap Left", "file": "part_05_caps.step", "pos": App.Placement(), "mod": "part_05_caps", "func": "build_caps"},
-        {"name": "Center Bolt", "file": "part_01_center_bolt.step", "pos": App.Placement(), "mod": "part_01_center_bolt", "func": "build_printed_bolt"},
+        {"name": "Cap Left", "file": "part_05_caps.step", "pos": App.Placement(App.Vector(0,0,z_cap_left), App.Rotation()), "mod": "part_05_caps", "func": "build_caps"},
+        {"name": "Cap Right (Handle)", "file": "part_05_caps.step", "pos": App.Placement(App.Vector(frame_handle_mount_x, frame_handle_mount_y, handle_top_z), App.Rotation(App.Vector(0,1,0), 180)), "mod": "part_05_caps", "func": "build_caps"},
         # Right Fasteners
         {"name": "Frame Bolt R1", "file": "part_04_fasteners.step", "pos": App.Placement(App.Vector(x_spread, y_floor, z_right_outer), bolt_rot_R), "mod": "part_04_fasteners", "func": "build_fastener"},
         {"name": "Frame Bolt R2", "file": "part_04_fasteners.step", "pos": App.Placement(App.Vector(-x_spread, y_floor, z_right_outer), bolt_rot_R), "mod": "part_04_fasteners", "func": "build_fastener"},

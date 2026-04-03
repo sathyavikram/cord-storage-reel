@@ -48,37 +48,13 @@ def build_handle():
     hex_hole_len = handle_standoff + crank_thickness
     hex_cutout = make_hex_prism(handle_peg_radius + h_clearance, hex_hole_len + 1, App.Placement(App.Vector(x_mount, y_mount, right_frame_outer_z - 0.5), App.Rotation(0,0,0,1)))
     
-    # Internal Female Threads for the Central Bolt inside the Handle
-    # The bolt head seats at Z = handle_top_z - 11, so up to 162
-    # The Handle spans from right_frame_outer_z (Z=127) to 162.
     handle_top_z = z_crank + crank_thickness + handle_anchor_len + 5*scale
     
-    t_pitch = 5.0 * scale
-    t_radius = 12.0 * scale + h_clearance
-    desired_t_start = right_frame_outer_z - 5.0 * scale
-    t_start = round(desired_t_start / t_pitch) * t_pitch
-    t_length = 50.0 * scale + (desired_t_start - t_start + 10*scale)
-    t_r_inner = 12.0 * scale - (t_pitch * 0.45) + h_clearance
-
-    t_helix = Part.makeHelix(t_pitch, t_length, t_r_inner, 0)
+    # Simple smooth hole for the Universal Cap thread to pass through
+    pass_through_radius = 12.0 * scale + h_clearance + 0.5 * scale  # A bit extra clearance so it freely spins
+    pass_through_hole = Part.makeCylinder(pass_through_radius, 100 * scale, App.Vector(x_mount, y_mount, right_frame_outer_z - 5*scale))
     
-    inner_X = t_r_inner - 2.0 * scale
-    p1 = App.Vector(inner_X, 0, -t_pitch*0.35)
-    p2 = App.Vector(t_radius, 0, -t_pitch*0.1)
-    p3 = App.Vector(t_radius, 0,  t_pitch*0.1)
-    p4 = App.Vector(inner_X, 0,  t_pitch*0.35)
-    t_wire = Part.Wire(Part.makePolygon([p1, p2, p3, p4, p1]))
-    
-    t_sweep = Part.Wire(t_helix).makePipeShell([t_wire], True, True)
-    t_sweep.Placement = App.Placement(App.Vector(x_mount, y_mount, t_start), App.Rotation(0,0,0,1))
-    
-    t_core = Part.makeCylinder(t_r_inner, t_length + 2*scale, App.Vector(x_mount, y_mount, t_start - 1*scale))
-    
-    thread_cutter = t_core.fuse(t_sweep)
-
-    bolt_head_recess = Part.makeCylinder(13.5 * scale, 15 * scale, App.Vector(x_mount, y_mount, handle_top_z - 11*scale))
-    
-    pin_cutout = hex_cutout.fuse(thread_cutter).fuse(bolt_head_recess)
+    pin_cutout = hex_cutout.fuse(pass_through_hole)
     crank_arm = crank_solid.cut(pin_cutout)
     
     h_shield = Part.makeCylinder(28*scale, 8*scale, App.Vector(x_mount, y_mount + hole_dist, z_crank + crank_thickness))

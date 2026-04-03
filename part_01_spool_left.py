@@ -17,8 +17,8 @@ from params import *
 
 def build_left_spool():
     l_flange = Part.makeCylinder(flange_radius, flange_thickness, App.Vector(0,0, -half_axle - flange_thickness))
-    # 70% Axle length: Goes from Z=-80 to Z=32 (112mm total)
-    l_axle = Part.makeCylinder(axle_radius, 112 * scale, App.Vector(0,0,-half_axle))
+    # 50% Axle length: perfectly centered joint
+    l_axle = Part.makeCylinder(axle_radius, half_axle, App.Vector(0,0,-half_axle))
 
     def make_hex_prism(radius, length, placement):
         pts = []
@@ -30,43 +30,10 @@ def build_left_spool():
         prism.Placement = placement
         return prism
 
-    # The main hex receiver hole (from Z=31 to Z=55)
+    # The main hex receiver hole
     clearance_amount = 0.4 * scale
-    l_axle_hole = make_hex_prism(peg_radius + clearance_amount, 58.0*scale, App.Placement(App.Vector(0,0,-24.5*scale), App.Rotation(0,0,0,1)))
-
-    # --- Internal Thread Cutter for Center Bolt ---
-    # Threading the inner bore from Z=5 to Z=55 (50mm length)
-    t_pitch = 5.0 * scale
-    t_radius = 12.0 * scale + clearance_amount  # Increased diameter
-    desired_t_start = -100.0 * scale
-    t_start = round(desired_t_start / t_pitch) * t_pitch
-    t_length = 85.0 * scale + (desired_t_start - t_start + 10*scale)
-    t_r_inner = 12.0 * scale - (t_pitch * 0.45) + clearance_amount
-    
-    t_helix = Part.makeHelix(t_pitch, t_length, t_r_inner, 0)
-    
-    inner_X = t_r_inner - 2.0 * scale
-    p1 = App.Vector(inner_X, 0, -t_pitch*0.35)
-    p2 = App.Vector(t_radius, 0, -t_pitch*0.1)
-    p3 = App.Vector(t_radius, 0,  t_pitch*0.1)
-    p4 = App.Vector(inner_X, 0,  t_pitch*0.35)
-    t_wire = Part.Wire(Part.makePolygon([p1, p2, p3, p4, p1]))
-    
-    t_sweep = Part.Wire(t_helix).makePipeShell([t_wire], True, True)
-    t_sweep.Placement = App.Placement(App.Vector(0,0,t_start), App.Rotation(0,0,0,1))
-    t_core = Part.makeCylinder(t_r_inner, t_length + 25.0 * scale, App.Vector(0, 0, t_start - 25.0 * scale))
-    
-    thread_cutter = t_core.fuse(t_sweep)
-    
-    # Optional chamfer for the thread entrance to help align the bolt at Z=55
-    
-    
-
-    
-
-    # Allow space for the bolt tip extending further if necessary
-    
-    
+    hex_depth = 50.0 * scale
+    l_axle_hole = make_hex_prism(peg_radius + clearance_amount, hex_depth, App.Placement(App.Vector(0,0,-hex_depth + 1.0 * scale), App.Rotation(0,0,0,1)))
 
     left_axle_pin_length = z_gap + hub_thickness + (5.0 * scale)
     l_pin_bearing = Part.makeCylinder(pin_radius, left_axle_pin_length, App.Vector(0,0, -half_axle - flange_thickness - left_axle_pin_length))
@@ -75,9 +42,9 @@ def build_left_spool():
     anchor_tip_z = -half_axle - flange_thickness - left_axle_pin_length
     
     c_pitch = 5.0 * scale
-    c_radius = 25.0 * scale + clearance_amount  # Increased diameter for better cut
-    c_length = 40.0 * scale  # Extended length to cut through flange (15mm) and into axle
-    c_r_inner = 25.0 * scale - (c_pitch * 0.45) + clearance_amount
+    c_radius = 12.0 * scale + clearance_amount  # Match universal cap radius
+    c_length = 65.0 * scale  # Extended length to accommodate Universal Cap thread
+    c_r_inner = 12.0 * scale - (c_pitch * 0.45) + clearance_amount
     
     c_helix = Part.makeHelix(c_pitch, c_length, c_r_inner, 0)
     
@@ -94,7 +61,7 @@ def build_left_spool():
     
     cap_cutter = c_core.fuse(c_sweep)
     
-    chamfer = Part.makeCone(c_radius + 2, c_r_inner, c_pitch/2 + 2, App.Vector(0,0,anchor_tip_z))
+    chamfer = Part.makeCone(c_radius + 4, c_r_inner, c_pitch/2 + 4, App.Vector(0,0,anchor_tip_z - 2.0))
     cap_cutter = cap_cutter.fuse(chamfer)
 
     for i in range(6):
@@ -108,17 +75,11 @@ def build_left_spool():
     
     left_spool = l_flange.fuse(l_axle).fuse(l_pin_bearing)
     
-    # Unified thread cutter
-    thread_cutter = t_core.fuse(t_sweep).removeSplitter()
-    
-    # Cap cutter
-    cap_cutter = cap_cutter.removeSplitter()
-    
     left_spool = left_spool.cut(l_axle_hole)
-    left_spool = left_spool.cut(thread_cutter)
-    left_spool = left_spool.cut(cap_cutter)
     
-    part = left_spool.removeSplitter()
+    # Actually cut the cap threaded hole from the spool
+    left_spool = left_spool.cut(cap_cutter)
+    left_spool = left_spool.removeSplitter()
     
     export_dir = EXPORT_DIR
     os.makedirs(export_dir, exist_ok=True)
@@ -128,10 +89,10 @@ def build_left_spool():
         if os.path.exists(f_path):
             os.remove(f_path)
     print(f'Exporting part_01_spool_left...')
-    part.exportStl(stl_file)
-    part.exportStep(step_file)
+    left_spool.exportStl(stl_file)
+    left_spool.exportStep(step_file)
     
-    return part
+    return left_spool
 
 if __name__ == '__main__':
     doc_name = "Doc_" + os.path.basename(__file__).replace(".py", "")

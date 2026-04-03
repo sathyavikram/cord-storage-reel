@@ -15,25 +15,24 @@ if "params" in sys.modules: del sys.modules["params"]
 from params import *
 
 def build_caps():
-    cap_thickness = 10 * scale
-    cap_rad = hub_radius
+    cap_thickness = cap_depth
+    cap_rad = 36.0 * scale
 
-    # We want a 5mm visual gap between the outside of the frame and the cap
-    left_axle_pin_length = z_gap + hub_thickness + (5.0 * scale)
-    anchor_tip_z = -half_axle - flange_thickness - left_axle_pin_length
+    # Build the cap at origin
+    anchor_z = 0.0
     
     # Cap body
     cap_h = cap_thickness
-    cap_L = Part.makeCylinder(cap_rad, cap_h, App.Vector(0,0, anchor_tip_z - cap_h))
+    cap_L = Part.makeCylinder(cap_rad, cap_h, App.Vector(0,0, anchor_z - cap_h))
     
     # Male Threaded Peg - Nominal dimensions, clearance handled in female socket
     t_pitch = 5.0 * scale
     
     # Shrink the entire cap thread radius to add extra clearance for easy rotation.
     extra_clearance = 0.4 * scale
-    t_radius = (25.0 * scale) - extra_clearance  # Nominal radius
+    t_radius = (12.0 * scale) - extra_clearance  # Nominal radius is 12
     
-    t_length = 24.0 * scale
+    t_length = 60.0 * scale
     t_r_inner = t_radius - (t_pitch * 0.45)  # Nominal root radius
     
     t_helix = Part.makeHelix(t_pitch, t_length, t_r_inner, 0)
@@ -46,12 +45,12 @@ def build_caps():
     t_wire = Part.Wire(Part.makePolygon([p1, p2, p3, p4, p1]))
     
     t_sweep = Part.Wire(t_helix).makePipeShell([t_wire], True, True)
-    t_sweep.Placement = App.Placement(App.Vector(0,0,anchor_tip_z), App.Rotation(0,0,0,1))
+    t_sweep.Placement = App.Placement(App.Vector(0,0,anchor_z), App.Rotation(0,0,0,1))
     
     # Extend core down to capture the floating down-curling sweep
     core_ext = t_pitch
-    t_core = Part.makeCylinder(t_r_inner, t_length, App.Vector(0,0,anchor_tip_z))
-    t_core_ext = Part.makeCylinder(t_r_inner, core_ext, App.Vector(0,0,anchor_tip_z - core_ext))
+    t_core = Part.makeCylinder(t_r_inner, t_length, App.Vector(0,0,anchor_z))
+    t_core_ext = Part.makeCylinder(t_r_inner, core_ext, App.Vector(0,0,anchor_z - core_ext))
     t_core = t_core.fuse(t_core_ext)
 
     # Flathead screwdriver slot for grip
@@ -59,7 +58,7 @@ def build_caps():
     slot_length = cap_rad * 2 + 1.0
     slot_depth = 4.0 * scale
     slot = Part.makeBox(slot_length, slot_width, slot_depth, 
-                        App.Vector(-slot_length/2, -slot_width/2, anchor_tip_z - cap_h - 0.1))
+                        App.Vector(-slot_length/2, -slot_width/2, anchor_z - cap_h - 0.1))
     cap_L = cap_L.cut(slot)
     
     # Avoid OpenCASCADE boolean hangs by using makeCompound for the final 3D printing export

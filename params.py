@@ -26,7 +26,7 @@ hub_radius = 50 * scale
 hub_hole_radius = pin_radius + 2.0 
 
 crossbar_radius = 12 * scale 
-z_gap = 2.0 * scale            
+z_gap = 3.0 * scale            
 
 cap_depth = 7 * scale
 right_axle_pin_length = z_gap + hub_thickness

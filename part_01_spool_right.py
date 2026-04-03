@@ -18,8 +18,8 @@ from params import *
 def build_right_spool():
     r_flange = Part.makeCylinder(flange_radius, flange_thickness, App.Vector(0,0, half_axle))
     
-    # 30% Axle length: Goes from Z=32 to Z=80 (48mm length)
-    r_axle = Part.makeCylinder(axle_radius, 48 * scale, App.Vector(0,0, 32 * scale))
+    # 50% Axle length: perfectly centered joint
+    r_axle = Part.makeCylinder(axle_radius, half_axle, App.Vector(0,0, 0))
     
     def make_hex_prism(radius, length, placement):
         pts = []
@@ -32,15 +32,16 @@ def build_right_spool():
         return prism
 
     clearance_amount = 0.4 * scale
-    r_axle_peg = make_hex_prism(peg_radius - clearance_amount/2, 57 * scale, App.Placement(App.Vector(0,0,-24 * scale), App.Rotation(0,0,0,1)))
+    hex_len = 45.0 * scale
+    r_axle_peg = make_hex_prism(peg_radius - clearance_amount/2, hex_len, App.Placement(App.Vector(0,0,-hex_len), App.Rotation(0,0,0,1)))
     
-    # --- Center Bolt Through-Bore with Female Threads ---
-    # Threading from Z=30 to beyond the handle peg (150mm length)
+    # --- Threading just for the Handle Bolt ---
+    # Threading from top of the handle peg down a bit (~45mm total depth)
     t_pitch = 5.0 * scale
     t_radius = 12.0 * scale + clearance_amount  # Increased diameter
-    desired_t_start = -39.5 * scale
+    desired_t_start = right_frame_outer_z - 35.0 * scale
     t_start = round(desired_t_start / t_pitch) * t_pitch
-    t_length = 195.0 * scale + (desired_t_start - t_start + 10*scale)
+    t_length = 65.0 * scale + (desired_t_start - t_start)
     t_r_inner = 12.0 * scale - (t_pitch * 0.45) + clearance_amount
 
     t_helix = Part.makeHelix(t_pitch, t_length, t_r_inner, 0)

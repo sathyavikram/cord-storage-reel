@@ -69,3 +69,38 @@ Estimated capacities at about 70% packing efficiency:
 3. **Install the Crossbars:** With the frames seated on the spool axles, press the **3 Crossbars** (`04_Crossbar_Front.stl`, `04_Crossbar_Back.stl`, `04_Crossbar_Top.stl`) into the round sockets between the two frames to lock the main structure together. Add CA glue or epoxy to the crossbar sockets if you want a permanent frame.
 4. **Attach the Handle:** Slip the **Handle** (`02_Handle.stl`) outer socket over the smaller, outermost handle peg extending from the **Right Spool** axle. 
 5. **Lock it Together:** Snap or glue the **Caps** (`05_Cap_L.stl` and `05_Cap_R.stl`) onto the extremely exposed pin ends (one cap on the far left of the spool axle, one cap holding the handle onto the right peg) to securely retain the moving parts.
+## 📸 Gallery & Print Previews
+
+### Images
+<details>
+<summary>Click to view assembled and printed parts</summary>
+<br>
+
+<img src="media/images/IMG_8852.png" width="400">
+<img src="media/images/IMG_8856.png" width="400">
+<img src="media/images/IMG_8860.png" width="400">
+<img src="media/images/IMG_8861.png" width="400">
+<img src="media/images/IMG_8864.png" width="400">
+<img src="media/images/IMG_8871.png" width="400">
+<img src="media/images/IMG_8882.png" width="400">
+<img src="media/images/IMG_8883.png" width="400">
+<img src="media/images/IMG_8886.png" width="400">
+<img src="media/images/IMG_8887.png" width="400">
+<img src="media/images/IMG_8888.png" width="400">
+<img src="media/images/IMG_8889.png" width="400">
+<img src="media/images/IMG_8894.png" width="400">
+
+</details>
+
+### Print Plates (Videos)
+<details>
+<summary>Click to view slicing/print process videos</summary>
+<br>
+
+- [Plate 1](media/videos/plate-1.mp4)
+- [Plate 3](media/videos/plate-3.mp4)
+- [Plate 4](media/videos/plate-4.mp4)
+- [Plate 5](media/videos/plate-5.mp4)
+
+*(Note: GitHub natively supports playing embedded .mp4 files if you click the links!)*
+</details>

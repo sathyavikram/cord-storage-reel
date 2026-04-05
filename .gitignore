@@ -44,5 +44,6 @@ Icon
 *.FCMacro
 *.swp
 
-# Note: 3D model export files in the root are kept, but exports directory is ignored
-exports/
+# Note: 3D model export files in the root are kept.
+# Ignoring assembly.stl because it exceeds GitHub's 100MB file limit
+exports/assembly.stl

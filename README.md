@@ -5,10 +5,11 @@ A fully parametric, modular, and support-free 3D printable cord storage reel. De
 At its default scale (`user_scale = 1.0`), the largest printable part fits inside a standard **250x250x250 mm** 3D printer build volume and the assembled reel can hold about **~105 feet of 14/3 wire**.
 
 ## ✨ Features
-* **Modular, Print-Friendly Parts:** The reel breaks down into simple printable parts (frames, crossbars, split spool, handle, caps) for reliable slicing and straightforward assembly.
+* **Modular, Print-Friendly Parts:** The reel breaks down into simple printable parts (frames, crossbars, split spool, handle, caps) for reliable slicing and straightforward assembly. Included print profiles (`3d-print/` folder) for Bambu and Creality.
 * **Fully Parametric:** Just change the `user_scale` variable in `params.py` to proportionally shrink or enlarge the entire assembly. Clearances and tolerances scale automatically.
-* **Slip-Fit Assembly:** Features center spool alignment, a dedicated handle peg, press-fit crossbars, and retaining caps with mathematically calculated tolerances (`0.5 mm * scale`).
+* **Slip-Fit & Threaded Assembly:** Features center spool alignment, a dedicated handle peg, press-fit crossbars, and retaining threaded parts (fasteners and caps) with mathematically calculated tolerances, including extra clearance (`0.4 mm * scale`) for easy rotation.
 * **Auto-Exporting:** Running the scripts generates `.step` and `.stl` files directly into the local `exports/` folder.
+* **Rich Media:** See the `media/` folder in the project for visual references, assembly videos, and reference images.
 
 ## 📂 File Architecture
 The monolithic code has been separated out for easier maintenance and independent part generation:
@@ -19,6 +20,7 @@ The monolithic code has been separated out for easier maintenance and independen
 * `part_02_handle.py` - Hand crank that mounts on the exposed right spool axle peg.
 * `part_03_frame.py` - Heavy-duty A-frame structural sides with round crossbar sockets.
 * `part_04_crossbars.py` - Cylindrical crossbars that connect the two frame sides.
+* `part_04_fasteners.py` - Threaded fasteners with deep screwdriver slots (4.5mm) for structural assembly.
 * `part_05_caps.py` - Retaining caps that lock the rotating spool onto the frame.
 * `assembly.py` - Master script that imports all parts, constructs the full digital assembly, and exports everything.
 

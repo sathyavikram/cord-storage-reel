@@ -17,13 +17,17 @@ from params import *
 
 def build_fastener():
     t_pitch = 4.0 * scale
-    t_radius = 8.0 * scale
+    
+    # Shrink the fastener thread radius to add extra clearance for easy rotation.
+    extra_clearance = 0.4 * scale
+    t_radius = (8.0 * scale) - extra_clearance
+    
     thread_length = 25.0 * scale
     smooth_length = 5.0 * scale
     head_height = 6.0 * scale  # Counterbore is 6.5
     head_radius = 13.5 * scale # Counterbore is 14.0
     
-    t_r_inner = 8.0 * scale - (t_pitch * 0.45)
+    t_r_inner = t_radius - (t_pitch * 0.45)
     
     # 1. The Head (printed flat on bed at Z=0)
     head = Part.makeCylinder(head_radius, head_height, App.Vector(0,0,0))

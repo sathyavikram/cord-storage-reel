@@ -2,6 +2,8 @@
 
 A fully parametric, modular, and support-free 3D printable cord storage reel. Designed using FreeCAD's Python API through Constructive Solid Geometry (CSG), this project generates a sturdy 10-piece "flat-pack" assembly that seamlessly snaps together.
 
+🚀 **Download and 3D Print directly from Bambu MakerWorld:** [Heavy-Duty Cord & Wire Storage Reel](https://makerworld.com/en/models/2621094-heavy-duty-cord-wire-storage-reel#profileId-2893059)
+
 At its default scale (`user_scale = 1.0`), the largest printable part fits inside a standard **250x250x250 mm** 3D printer build volume and the assembled reel can hold about **~105 feet of 14/3 wire**.
 
 ## ✨ Features

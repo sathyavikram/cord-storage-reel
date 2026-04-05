@@ -35,7 +35,7 @@ def build_fastener():
     # Flathead screwdriver slot
     slot_width = 3.0 * scale
     slot_length = head_radius * 2 + 1.0
-    slot_depth = 3.0 * scale
+    slot_depth = 4.5 * scale
     slot = Part.makeBox(slot_length, slot_width, slot_depth, App.Vector(-slot_length/2, -slot_width/2, -0.1))
     head = head.cut(slot)
     

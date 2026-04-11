@@ -20,7 +20,7 @@ def build_right_spool():
     
     # 50% Axle length: perfectly centered joint
     r_axle = Part.makeCylinder(axle_radius, half_axle, App.Vector(0,0, 0))
-    
+
     def make_hex_prism(radius, length, placement):
         pts = []
         for i in range(7):
@@ -75,6 +75,29 @@ def build_right_spool():
         r_flange = r_flange.cut(cutter)
 
     right_spool = r_flange.fuse(r_axle).fuse(r_axle_peg).fuse(r_pin).fuse(r_handle_peg)
+    
+    # --- Add Strength Ribs/Gussets ---
+    rib_thickness = 4.0 * scale
+    rib_height = 20.0 * scale
+    rib_length = 35.0 * scale
+    
+    rib_wire = Part.Wire(Part.makePolygon([
+        App.Vector(axle_radius - 7, 0, half_axle),
+        App.Vector(axle_radius - 1 + rib_length, 0, half_axle),
+        App.Vector(axle_radius - 7, 0, half_axle - rib_height),
+        App.Vector(axle_radius - 7, 0, half_axle)
+    ]))
+    rib_face = Part.Face(rib_wire)
+    rib_solid = rib_face.extrude(App.Vector(0, rib_thickness, 0))
+    rib_solid.translate(App.Vector(0, -rib_thickness/2.0, 0))
+    
+    for i in range(6):
+        # Offset angle by 30 to put ribs between holes 
+        angle = math.radians(i * 60 + 30)
+        rib = rib_solid.copy()
+        rib.rotate(App.Vector(0,0,0), App.Vector(0,0,1), math.degrees(angle))
+        right_spool = right_spool.fuse(rib)
+
     
     
     thread_cutter = t_core.fuse(t_sweep).removeSplitter()

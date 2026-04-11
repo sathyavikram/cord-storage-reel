@@ -59,10 +59,7 @@ def build_left_spool():
     c_sweep.Placement = App.Placement(App.Vector(0,0,anchor_tip_z - 1.0), App.Rotation(0,0,0,1))
     c_core = Part.makeCylinder(c_r_inner, c_length, App.Vector(0,0,anchor_tip_z - 1.0))
     
-    cap_cutter = c_core.fuse(c_sweep)
-    
     chamfer = Part.makeCone(c_radius + 4, c_r_inner, c_pitch/2 + 4, App.Vector(0,0,anchor_tip_z - 2.0))
-    cap_cutter = cap_cutter.fuse(chamfer)
 
     for i in range(6):
         angle = math.radians(i * 60)
@@ -71,15 +68,51 @@ def build_left_spool():
         cutter = Part.makeCylinder(hole_radius, flange_thickness + 10, App.Vector(hx, hy, -half_axle - flange_thickness - 5))
         l_flange = l_flange.cut(cutter)
     
-    # Build spool and cut cap socket through all components (flange, axle, pin)
+    # --- Add Strength Ribs/Gussets ---
+    rib_thickness = 4.0 * scale
+    rib_height = 20.0 * scale
+    rib_length = 35.0 * scale
     
+    rib_wire = Part.Wire(Part.makePolygon([
+        App.Vector(axle_radius - 7, 0, -half_axle),
+        App.Vector(axle_radius - 7, 0, -half_axle + rib_height),
+        App.Vector(axle_radius - 1 + rib_length, 0, -half_axle),
+        App.Vector(axle_radius - 7, 0, -half_axle)
+    ]))
+    rib_face = Part.Face(rib_wire)
+    rib_solid = rib_face.extrude(App.Vector(0, rib_thickness, 0))
+    rib_solid.translate(App.Vector(0, -rib_thickness/2.0, 0))
+    
+    ribs = []
+    for i in range(6):
+        # We need to offset the angle by 30 degrees so ribs fall BETWEEN the holes
+        angle = math.radians(i * 60 + 30)
+        rib = rib_solid.copy()
+        rib.rotate(App.Vector(0,0,0), App.Vector(0,0,1), math.degrees(angle))
+        ribs.append(rib)
+    
+    # 1. Fuse basic geometry and ribs
     left_spool = l_flange.fuse(l_axle).fuse(l_pin_bearing)
-    
+    print("V1 base:", left_spool.Volume)
+    for r in ribs:
+        left_spool = left_spool.fuse(r)
+    print("V2 ribs:", left_spool.Volume)
+        
+    # 2. Cut internal holes sequentially (no complex multi-part cutters)
     left_spool = left_spool.cut(l_axle_hole)
+    print("V3 ax_hole:", left_spool.Volume)
     
-    # Actually cut the cap threaded hole from the spool
-    left_spool = left_spool.cut(cap_cutter)
+    left_spool = left_spool.cut(c_core)
+    print("V4 c_core:", left_spool.Volume)
+    
+    left_spool = left_spool.cut(c_sweep)
+    print("V5 c_sweep:", left_spool.Volume)
+    
+    left_spool = left_spool.cut(chamfer)
+    print("V6 chamfer:", left_spool.Volume)
+    
     left_spool = left_spool.removeSplitter()
+    print("V7 removeSplitter:", left_spool.Volume)
     
     export_dir = EXPORT_DIR
     os.makedirs(export_dir, exist_ok=True)

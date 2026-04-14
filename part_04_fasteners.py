@@ -19,7 +19,7 @@ def build_fastener():
     t_pitch = 4.0 * scale
     
     # Shrink the fastener thread radius to add extra clearance for easy rotation.
-    extra_clearance = 0.4 * scale
+    extra_clearance = 0.6 * scale
     t_radius = (8.0 * scale) - extra_clearance
     
     thread_length = 25.0 * scale

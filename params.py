@@ -30,7 +30,7 @@ z_gap = 3.0 * scale
 
 cap_depth = 7 * scale
 right_axle_pin_length = z_gap + hub_thickness
-handle_standoff = 2.0 * scale
+handle_standoff = 5.0 # was 2.0 * scale
 handle_peg_length = handle_standoff + 10 * scale + cap_depth
 right_pin_length = right_axle_pin_length + handle_peg_length
 left_pin_length = z_gap + hub_thickness + cap_depth

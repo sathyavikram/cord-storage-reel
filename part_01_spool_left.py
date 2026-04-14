@@ -61,12 +61,53 @@ def build_left_spool():
     
     chamfer = Part.makeCone(c_radius + 4, c_r_inner, c_pitch/2 + 4, App.Vector(0,0,anchor_tip_z - 2.0))
 
-    for i in range(6):
+    for i in range(1, 6):
         angle = math.radians(i * 60)
         hx = hole_dist * math.cos(angle)
         hy = hole_dist * math.sin(angle)
         cutter = Part.makeCylinder(hole_radius, flange_thickness + 10, App.Vector(hx, hy, -half_axle - flange_thickness - 5))
         l_flange = l_flange.cut(cutter)
+    
+    # --- Side-Wall Slot for Plug/Wire Retainer ---
+    # Placed over the solid flange area (where the hole was skipped, angle = 0)
+    ret_x = hole_dist + 5.0 * scale
+    ret_y = 0
+    ret_z = -half_axle
+    ret_l = 40.0 # Force absolute 40mm length (30mm cavity + 10mm inner wall)
+    ret_w = (30.0 / scale) + (13.0 * scale) # ensure outer block can fit the 30mm unscaled cavity 
+    ret_h = 25.0 # absolute 25mm height
+    
+    retainer = Part.makeBox(ret_l, ret_w, ret_h, App.Vector(ret_x - ret_l/2, ret_y - ret_w/2, ret_z))
+    
+    # Wire slot: straight channel along X, 10mm absolute width for cord
+    wire_slot_w = 10.0 # Force absolute 10mm width regardless of scale
+    wire_slot = Part.makeBox(ret_l + 5, wire_slot_w, ret_h + 5, App.Vector(ret_x - ret_l/2 - 2.5, ret_y - wire_slot_w/2, ret_z - 2.5))
+    
+    # Plug cavity: wider section on the outer side for the male/female plug body
+    plug_cavity_w = 30.0 # Force absolute 30mm width regardless of global scale
+    plug_cavity_l = 30.0 # Force absolute 30mm length regardless of global scale
+    plug_cavity = Part.makeBox(plug_cavity_l + 5, plug_cavity_w, ret_h + 5, App.Vector(ret_x + ret_l/2 - plug_cavity_l, ret_y - plug_cavity_w/2, ret_z - 2.5))
+    
+    # Top snap lips to keep cord from jumping out
+    lip_w = 2.0 * scale
+    lip1 = Part.makeBox(ret_l + 5, lip_w, 3.0 * scale, App.Vector(ret_x - ret_l/2 - 2.5, ret_y - wire_slot_w/2, ret_z + ret_h - 3.0 * scale))
+    lip2 = Part.makeBox(ret_l + 5, lip_w, 3.0 * scale, App.Vector(ret_x - ret_l/2 - 2.5, ret_y + wire_slot_w/2 - lip_w, ret_z + ret_h - 3.0 * scale))
+    
+    retainer = retainer.cut(wire_slot).cut(plug_cavity)
+    # Add snap lips across the top of the channel
+    retainer = retainer.fuse(lip1).fuse(lip2)
+    # Clean up any bits of lip that protrude into the plug cavity
+    retainer = retainer.cut(plug_cavity)
+    
+    # Fillet all edges of the retainer/slot object
+    try:
+        # We try to fillet all edges with a 1.0mm radius. 
+        # (Excluding the bottom face edges is ideal, but FreeCAD will usually handle it well enough if fused later)
+        fillet_radius = 1.0
+        retainer = retainer.makeFillet(fillet_radius, retainer.Edges)
+    except Exception as e:
+        print(f"Warning: Retainer fillet failed: {e}")
+
     
     # --- Add Strength Ribs/Gussets ---
     rib_thickness = 4.0 * scale
@@ -92,7 +133,7 @@ def build_left_spool():
         ribs.append(rib)
     
     # 1. Fuse basic geometry and ribs
-    left_spool = l_flange.fuse(l_axle).fuse(l_pin_bearing)
+    left_spool = l_flange.fuse(l_axle).fuse(l_pin_bearing).fuse(retainer)
     print("V1 base:", left_spool.Volume)
     for r in ribs:
         left_spool = left_spool.fuse(r)

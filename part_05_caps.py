@@ -29,7 +29,7 @@ def build_caps():
     t_pitch = 5.0 * scale
     
     # Shrink the entire cap thread radius to add extra clearance for easy rotation.
-    extra_clearance = 0.4 * scale
+    extra_clearance = 0.6 * scale
     t_radius = (12.0 * scale) - extra_clearance  # Nominal radius is 12
     
     t_length = 60.0 * scale
